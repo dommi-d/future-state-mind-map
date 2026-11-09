@@ -18,3 +18,27 @@ I sent it as a txt file. It has all the code, the code is just in a txt file ins
 Add more camera support so that I can use wasd to change the camera positioning if I have not selected a specific point to center myself on. That way I can move the camera freely. Selecting a point centers the camera there though.
 
 The main thing is the specific positioning of these. The vessel's own voice should be within the vessel. Catastrophic condition is spread throughout the current state plane, not clumped into a ball in a corner of it. Same for the future state destination. It is spread throughout the future state plane. The other aspects are also on the planes, and those can be clumped among themselves. For the untapped pent up, that is throughout the current state plane in every citizen, not only clumped onto the void.
+
+.
+The ultra light beam is what the vessel rides on. Therefore it shouldn't be it's own node just floating along the void. 
+Before coding further, discuss this with me. 
+The infinite energy is all the humans intrinsic energy within themselves. 
+Chiraq is the idea that more Americans died from gang violence and murders in the streets of Chicago than Americans who died in Iraq in a week. That would be relevant to the to the 40 Killings Over Here. 40 Killings in a Week. Note since they have similar ideas. 
+
+The red lines connecting Catastrophic Condition to it's nodes can stay on and stay red rather than only turning on when clicked. Same with the Future State counterpart.
+
+1A. I like that idea. Have the journey only freeze if you click the pause button though. Have clicking on a node not stop it. Also, don't follow the notebook order for anything as the first option for what to do with it. Have it be directionally and spatially relevant first. Take my mind to a higher place is a call to escape the current state plane, so that would be closest to that plane. Then I'd say Riding on an ultra light beam, Hurtling into the unknown, A beam propelling forward, Anchor in that golden beam of light. (Since the beams are anchored to the 3rd dimensional positioning of the future state).
+
+No duplicate notes is good. There is a narrow path through as in there is a narrow path through the void. The void's hub can be inside, and void clouds can be spreading out to visually show what the affirmations would shield against. These clouds can be toggled off. They are simple and have transparency. The clouds would never pass through the affirmation ark shielding the vessel. 
+
+2A sounds good. Section 2 question 1 is correct. Don't do that and don't clutter things. The second question sounds correct as well. You're right they are together. 
+
+3. Yeah have them be explained together in the box, but you can keep the notes as their own notes. The GI ties in yea. 
+
+4. Yes to the first question. No to the second question, keep those as is.
+
+.
+For you cannot ring that bell, the idea is from SEAL training. Ringing the bell ends the training and you can go home.  You will have the opportunity to give it all up. To let go and fall away. You will have an out to leave the void. To return back to the current state and feel the comfort. 
+You CANNOT take the out. You CANNOT ring the bell.
+Have the clouds fill the entire void, not just the center.
+Don't have the void note be in the center. Have it randomly within towards the bottom and closer to the current state than it is to the future state.
