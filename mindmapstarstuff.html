@@ -24,7 +24,8 @@ canvas{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
 .chip{display:flex;align-items:center;gap:6px;padding:4px 9px;font-size:11px;background:rgba(10,12,26,.6)}
 .chip i{width:8px;height:8px;border-radius:50%;display:inline-block}
 .chip.on{border-color:#fff;background:rgba(255,255,255,.18)}
-#hint{position:fixed;left:12px;bottom:10px;font-size:11px;opacity:.6;max-width:min(520px,52vw);line-height:1.35;pointer-events:none;text-shadow:0 0 8px #000}
+#hint{position:fixed;left:12px;bottom:10px;font-size:11px;opacity:.6;max-width:min(560px,54vw);line-height:1.4;pointer-events:none;text-shadow:0 0 8px #000}
+#mode{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);font-size:11px;padding:4px 10px;border-radius:999px;pointer-events:none;background:rgba(10,12,26,.7);border:1px solid rgba(160,170,255,.25)}
 #tip{position:fixed;pointer-events:none;display:none;font-size:11.5px;padding:4px 8px;border-radius:6px;background:rgba(5,6,16,.88);border:1px solid rgba(180,190,255,.3);max-width:280px;z-index:5}
 #panel{position:fixed;right:12px;bottom:12px;width:min(370px,calc(100vw - 24px));max-height:58vh;overflow:auto;padding:14px 16px 14px;display:none;font-size:13px;line-height:1.45}
 #panel.on{display:block}
@@ -46,7 +47,7 @@ canvas{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
 <canvas id="c"></canvas>
 <div id="top">
   <h1>The Future State</h1>
-  <p>Future State above, Current State below, the void between them in the 4th dimension. Humans are scattered through both planes, star stuff inside every one. The vessel rides an ultra light beam across, held inside its affirmations.</p>
+  <p>Future State above, Current State below, the void between them in the 4th dimension. Humans are scattered through both planes, star stuff inside every one. The vessel rides an ultra light beam across, carrying its voice, burden and purpose inside its affirmations.</p>
   <div id="bar" class="glass">
     <label class="sl">Vessels <b id="vn">1</b><input id="vs" type="range" min="1" max="48" value="1"><span id="vr"></span></label>
     <button id="bPause">Pause journey</button>
@@ -59,7 +60,8 @@ canvas{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
   <div id="leg"></div>
 </div>
 <div id="tip"></div>
-<div id="hint">Hollow ring = my placement call. Click anything to center the camera on it. Hovering a moving note freezes the journey so you can read it. Drag to rotate · wheel or pinch to zoom.</div>
+<div id="mode"></div>
+<div id="hint">Hollow ring = my placement call. Click anything to center the camera on it. With nothing selected: W A S D move, Q / E down / up, Shift faster. Esc or click empty space to deselect. Drag to rotate · wheel or pinch to zoom.</div>
 <div id="panel" class="glass"></div>
 
 <script>
@@ -73,8 +75,10 @@ const PS=360, PT=22;            // plane half-size, thickness (both planes are t
 const VR=190;                   // void radius
 const NH=420, MAXV=48, HH=4;    // humans per plane, max vessels, human height
 const Y0=CY+PT/2+1, Y1=FY-PT/2-1;
-const SHELL_R=14, CARGO_R=7;
-const PN=48;                    // path samples
+const CTOP=CY+PT/2, CBOT=CY-PT/2, FTOP=FY+PT/2;
+const SHELL_R=14, CARGO_R=7, SAC_R=5, VOICE_R=3.2;
+const PN=48;
+const HOME={x:-170,z:130};      // the vessel's human, in the current plane
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const hex2rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
@@ -126,48 +130,82 @@ const SRC={
 /* ================= groups ================= */
 const GR={
  fsroot:{n:'The Future State',c:'#ffd27a'},
- dest:{n:'Future State · Destination',c:'#ffd27a'},
+ dest:{n:'Future State · Destination (spread across the plane)',c:'#ffd27a'},
  look:{n:'Future State · What it looks like',c:'#ff9ec7'},
  feel:{n:'Future State · How it feels',c:'#ffb48a'},
  cit:{n:'Future State · Citizens',c:'#7fd0ff'},
  act:{n:'Future State · Activities',c:'#8be3a0'},
  life:{n:'Future State · Lifestyle',c:'#c4f07a'},
  csroot:{n:'The Current State',c:'#ff6a5c'},
- cur:{n:'Current State · Catestrophic Condition',c:'#ff6a5c'},
+ cur:{n:'Current State · Catestrophic Condition (spread across the plane)',c:'#ff6a5c'},
  cargo:{n:'The Vessel · Burden & Purpose (carried inside)',c:'#ffb347'},
  aff:{n:'The Vessel · Affirmations (the shell)',c:'#bfe9ff'},
- voice:{n:"The Vessel · its own voice (current state)",c:'#e0b0ff'},
- sac:{n:'The Vessel · Sacrifice (current state)',c:'#ff7aa8'},
+ voice:{n:"The Vessel · its own voice (inside)",c:'#e0b0ff'},
+ sac:{n:'The Vessel · Sacrifice (inside)',c:'#ff7aa8'},
  fourd:{n:'The 4th dimension',c:'#8f9bff'},
  beam:{n:'The ultra light beam',c:'#ffe28a'},
  void:{n:'The void',c:'#a66bff'},
  path:{n:'The narrow path',c:'#fff0b8'},
  star:{n:'We are star stuff',c:'#fff1a8'},
- starU:{n:'Star stuff · utilized',c:'#fff1a8'},
- starD:{n:'Star stuff · pent up',c:'#ff9a55'},
+ starU:{n:'Star stuff · utilized (in citizens, future state)',c:'#fff1a8'},
+ starD:{n:'Star stuff · pent up (in humans, current state)',c:'#ff9a55'},
  humans:{n:'Humans',c:'#9db4d6'}
 };
 const ABOUT={
  fsroot:"The destination. One place, not three pages: its citizens, its activities and lifestyle, what it looks like and how it feels. Everything the notebook says about it hangs above this plane, and none of it is split by page.",
- dest:"What the future state is for and where it is heading.",
+ dest:"What the future state is for and where it is heading. Its notes are spread across the whole plane, not gathered in one spot. Select this to see the faint lines out to each one.",
  look:"What it looks like: sky, water, land, domes, hills, holy sites, monumental structures.",
  feel:"How it feels: sustaining, nourishing, flourishing, close to the Father, every place sacred.",
  cit:"Who lives there: the citizens, passport holders, holy people.",
  act:"What is done there: what we build; implemented, structured, grown and spread; designed and architected.",
  life:"How life is lived there: what we breathe, culture, human flourishing, abundance.",
- csroot:"The plane at the bottom. The parts of it that are not good hang below it.",
- cur:"The parts of the current state that are not good. Heading spelled as written in the notebook.",
- voice:"Lines spoken from inside the human who is the vessel, standing in the current state. This part of the vessel stays in the 3rd dimension of the current state.",
- sac:"What it costs the vessel. Also stays in the current state.",
+ csroot:"The plane at the bottom. The parts of it that are not good are spread across it, hovering over the people.",
+ cur:"The parts of the current state that are not good, spread across the whole plane. Select this to see the faint lines out to each one. Heading spelled as written in the notebook.",
  fourd:"What lies between the planes. Both planes are 3rd dimensional and both are real. The vessel connects them through the 4th dimension.",
  beam:"The ultra light beam the vessel rides across the void into the future state. The faint beams that curl and dissolve in the void are attempts that did not make it through.",
  void:"The void sits between both planes, in the 4th dimension. It pulls. The affirmations shield the vessel from it.",
  path:"The way through the void. Narrow.",
- star:"Humans are star stuff, and so is the vessel. It is inside every human (the glowing core in each figure), brighter in the future state where it is utilized and energized, dim in the current state where it is untapped and pent up. If more humans unlock it, they too can ride an ultra light beam across the void, shining into the future state. Use the Vessels slider.",
+ star:"Humans are star stuff, and so is the vessel. It is inside every human (the glowing core in each figure). In the current state it is untapped, undirected, pent up in every human (a dim, confined ember), with those notes spread across the plane and each sitting over a human. In the future state it is utilized and energized in every citizen (a bright core and halo), with those notes spread across that plane. If more humans unlock it, they too can ride an ultra light beam across the void, shining into the future state. Use the Vessels slider.",
  aff:"The shell around the vessel. The affirmations stabilize it, keep it on course, and shield it from the pull of the void.",
- vessel:"One of the humans. Physically in the 3rd dimension of the current state, but what it holds, its burden and its purpose, belongs to the future state. Here its body stays rooted at its home in the current plane while its light rides the ultra light beam through the void to its counterpart in the future state. Inside: burden and purpose. Around it: the affirmations."
+ vessel:"One of the humans. Physically in the 3rd dimension of the current state, but what it holds, its burden and its purpose, belongs to the future state. Inside it: its own voice, its sacrifice, its burden and purpose. Around it: the affirmations. Its body stays rooted at its home in the current plane while its light rides the ultra light beam through the void to its counterpart in the future state."
 };
 const SUBLBL={dest:'DESTINATION',look:'WHAT IT LOOKS LIKE',feel:'HOW IT FEELS',cit:'ITS CITIZENS',act:'ACTIVITIES',life:'LIFESTYLE'};
+
+/* ================= humans (built first; some notes attach to them) ================= */
+const hx=new Float32Array(NH), hz=new Float32Array(NH), hdy=new Float32Array(NH);
+{
+  const r=rng(77), cities=[];
+  for(let i=0;i<11;i++) cities.push([(r()*2-1)*270,(r()*2-1)*270,35+r()*45]);
+  hx[0]=HOME.x; hz[0]=HOME.z; hdy[0]=0;
+  for(let i=1;i<NH;i++){
+    let x,z;
+    if(r()<0.7){ const c=cities[(r()*cities.length)|0]; x=c[0]+gauss(r)*c[2]; z=c[1]+gauss(r)*c[2]; }
+    else { x=(r()*2-1)*340; z=(r()*2-1)*340; }
+    hx[i]=clamp(x,-345,345); hz[i]=clamp(z,-345,345); hdy[i]=(r()*2-1)*6;
+  }
+}
+const hsx=new Float32Array(NH*2), hsy=new Float32Array(NH*2), hsz=new Float32Array(NH*2);
+const homeK=new Int16Array(NH).fill(-1);
+function nearestHuman(x,z,used){
+  let b=-1,bd=1e9;
+  for(let i=1;i<NH;i++){ if(used.has(i)) continue; const d=Math.hypot(hx[i]-x,hz[i]-z); if(d<bd){bd=d;b=i;} }
+  used.add(b); return b;
+}
+// best-candidate sampling: spreads n points over the plane, keeping clear of "avoid" zones [x,z,radius]
+function spread(n,seed,avoid,ext){
+  const r=rng(seed), out=[];
+  for(let i=0;i<n;i++){
+    let best=null,bd=-1e9;
+    for(let t=0;t<80;t++){
+      const x=(r()*2-1)*ext, z=(r()*2-1)*ext; let d=1e9;
+      for(const p of out) d=Math.min(d,Math.hypot(x-p[0],z-p[1]));
+      for(const p of avoid) d=Math.min(d,Math.hypot(x-p[0],z-p[1])-(p[2]||0));
+      if(d>bd){bd=d;best=[x,z];}
+    }
+    out.push(best);
+  }
+  return out;
+}
 
 /* ================= nodes ================= */
 const nodes=[]; const byId={};
@@ -186,7 +224,7 @@ function fib(n,i,hemi){
   const r=Math.sqrt(Math.max(0,1-y*y)), a=i*2.399963+0.7;
   return [Math.cos(a)*r,y,Math.sin(a)*r];
 }
-// items: [text, "src,ids", whyHollow, note]
+// clumped cluster around a hub. items: [text, "src,ids", whyHollow, note]
 function cluster(parent,center,group,items,Rr,o){
   o=o||{}; const n=items.length;
   items.forEach((it,i)=>{
@@ -195,18 +233,31 @@ function cluster(parent,center,group,items,Rr,o){
       x:center.x+d[0]*Rr, y:center.y+d[1]*Rr*(o.sq||.72)+(o.bias||0)*Rr, z:center.z+d[2]*Rr, r:3, minPx:2.6});
   });
 }
+// scattered notes at given points [x,z,y,stemY]; a faint stem drops to the plane (or the human)
+function scatter(parent,group,items,pts){
+  items.forEach((it,i)=>{
+    const p=pts[i];
+    addNode({group,kind:'el',label:it[0],text:it[0],srcs:it[1]?it[1].split(','):[],why:it[2]||'',note:it[3]||'',parent,
+      x:p[0],y:p[2],z:p[1],r:3,minPx:2.6,faint:true,stemY:p[3]});
+  });
+}
 const rr=n=>36+12*Math.sqrt(n);
-const WHY_P1="Page 1 has no section heading above this line, so placing it with the vessel's human side is my call.";
+const WHY_P1="Page 1 has no section heading above this line, so placing it with the vessel's own voice is my call.";
 
-/* --- Future State --- */
-const FSR=hub('fsroot','fsroot','root','THE FUTURE STATE',0,FY+125,0,ABOUT.fsroot,null,['hf1','hf2']);
-const fsSub={};
-['dest','look','feel','cit','act','life'].forEach((g,i)=>{
-  const a=(i*60+20)*Math.PI/180;
-  fsSub[g]=hub('hub_'+g,g,'sub',SUBLBL[g],Math.cos(a)*255,FY+85+(i%2)*22,Math.sin(a)*255,ABOUT[g],FSR);
+/* --- Future State: root, five clumped hubs, and the spread destination --- */
+const FSR=hub('fsroot','fsroot','root','THE FUTURE STATE',0,FY+140,0,ABOUT.fsroot,null,['hf1','hf2']);
+const HUBG=['look','feel','cit','act','life'];
+const fsSub={}, hubXZ=[];
+HUBG.forEach((g,i)=>{
+  const a=(i*72+20)*Math.PI/180, x=Math.cos(a)*250, z=Math.sin(a)*250;
+  hubXZ.push([x,z,100]);
+  fsSub[g]=hub('hub_'+g,g,'sub',SUBLBL[g],x,FY+80+(i%2)*16,z,ABOUT[g],FSR);
+  fsSub[g].stemY=FTOP;
 });
+const DESTH=hub('hub_dest','dest','sub',SUBLBL.dest,0,FY+90,0,ABOUT.dest,FSR);
 const FB={bias:.12,sq:.75};
-cluster(fsSub.dest,fsSub.dest,'dest',[
+
+scatter(DESTH,'dest',[
  ["Heaven on earth.","s9,s24"],
  ["We are here to make heaven on earth.","s9"],
  ["We are here to pivot humanity into a future state.","s10"],
@@ -215,7 +266,8 @@ cluster(fsSub.dest,fsSub.dest,'dest',[
  ["The former things are passed away.","s11"],
  ["Great civilization which takes us to higher forms.","s26"],
  ["Take me to the Future State","h1","The notebook uses this as a page heading. I made it a note because it is the plea the whole destination answers."]
-],rr(8),FB);
+],spread(8,11,hubXZ,305).map((p,i)=>[p[0],p[1],FTOP+16+(i%3)*11,FTOP]));
+
 cluster(fsSub.look,fsSub.look,'look',[
  ["Pink Sunsets.","s13"],["Domes.","s13"],["Hills.","s13"],
  ["Blue skies.","s25"],["Blue water.","s25"],["Green life.","s25"],["Brown earth.","s25"],
@@ -243,37 +295,17 @@ cluster(fsSub.life,fsSub.life,'life',[
  ["Abundance","s2","The last word of the Inception bullet, which has no punctuation. I placed it as a quality of life there."]
 ],rr(4),FB);
 
-/* --- Current State --- */
-const CSR=hub('csroot','csroot','root','THE CURRENT STATE',0,CY-105,0,ABOUT.csroot,null,[]);
-const CURH=hub('hub_cur','cur','sub','CATESTROPHIC CONDITION',205,CY-125,-115,ABOUT.cur,CSR,['hc']);
-cluster(CURH,CURH,'cur',[
+/* --- Current State: root, and the catestrophic condition spread across the plane --- */
+const CSR=hub('csroot','csroot','root','THE CURRENT STATE',0,CY-150,0,ABOUT.csroot,null,[]);
+const CURH=hub('hub_cur','cur','sub','CATESTROPHIC CONDITION',0,CY-85,0,ABOUT.cur,CSR,['hc']);
+scatter(CURH,'cur',[
  ["40 killings over here","s29"],["40 killings in a week","s29"],["Chi-raq","s30"],
  ["Poverty.","s31"],["No child left behind.","s31"],["Loss of agency.","s31"],["Barren.","s31"],
  ["Destructive agents left to their own devices.","s31"],
  ["GI, Your government has abandoned you.","s21","Sits under The Vessel on page 2, but it describes the current state failing the people in it."],
  ["They have ordered you to die.","s21","Same as above: a condition of the current state."],
  ["It is not safe out here","s21","Same as above: a condition of the current state."]
-],rr(11),{bias:-.1,sq:.75});
-
-/* --- Vessel's human side (anchored at home in the current plane) --- */
-const HOME={x:-170,z:130};
-const VOH=hub('hub_voice','voice','sub',"THE VESSEL'S OWN VOICE",-255,CY-105,175,ABOUT.voice,null,[]);
-const SACH=hub('hub_sac','sac','sub','SACRIFICE',-45,CY-110,265,ABOUT.sac,null,[]);
-cluster(VOH,VOH,'voice',[
- ["I'm looking at the church in the night sky.","s1",WHY_P1],
- ["I'm looking at the sky asking Granny what she think it is.","s3",WHY_P1],
- ["My body full of trauma.","s3",WHY_P1],
- ["Keep these bums away from me.","s3",WHY_P1],
- ["Keep these essays contagious","s3",WHY_P1,"The word \"essays\" is written as the notebook has it; the transcription marks it uncertain."],
- ["It's okay with me.","s3",WHY_P1],
- ["What's your name?","s22","","A first attempt is crossed out in the notebook."],
- ["Dear God make it all right.","s20"],["Save me.","s20"],["Hold me.","s20"]
-],rr(10),{bias:-.1,sq:.75});
-cluster(SACH,SACH,'sac',[
- ["Just give me life.","s5",WHY_P1],["I'll take yours.","s5",WHY_P1],
- ["I'm caught in a trap.","s6",WHY_P1],["And I can't walk out because I love you too much baby.","s6",WHY_P1],
- ["This is my religion.","s7",WHY_P1],["This is my Sacrifice.","s7",WHY_P1]
-],rr(6),{bias:-.1,sq:.75});
+],spread(11,23,[[HOME.x,HOME.z,45]],310).map((p,i)=>[p[0],p[1],CTOP+16+(i%3)*11,CTOP]));
 
 /* --- Between: 4th dimension --- */
 const pol=(d,r,y)=>[Math.cos(d*Math.PI/180)*r,y,Math.sin(d*Math.PI/180)*r];
@@ -295,18 +327,23 @@ cluster(HV,HV,'void',[
 ],rr(4),{sq:.8});
 cluster(HP,HP,'path',[["But there is a way.","s14"],["There is a narrow path through.","s14"]],rr(2),{sq:.8});
 
-/* --- Star stuff --- */
+/* --- Star stuff: hub in the between, notes spread over the humans of both planes --- */
 pp=pol(140,320,0);
 const STH=hub('hub_star','star','sub','WE ARE STAR STUFF',pp[0],pp[1],pp[2],ABOUT.star,null,['hs']);
-cluster(STH,{x:STH.x,y:STH.y+95,z:STH.z},'starU',[
- ["Halos.","s27"],["Infinite energy.","s27"],["Human potential productive energy.","s27"],["Utilized.","s27"],["Energized.","s27"]
-],58,{hemi:0,sq:.8});
-cluster(STH,{x:STH.x,y:STH.y-105,z:STH.z},'starD',[
- ["Human delta.","s28"],["Human consciousness.","s28"],["A powerful entity.","s28"],["Untapped,","s28"],["undirected,","s28"],
- ["pent up.","s28"],["No path forward,","s28"],["barriers in the Way.","s28"],["IT WILL RAGE.","s28"]
-],72,{hemi:0,sq:.8});
+{
+  const used=new Set([0]);
+  const dH=spread(9,31,[[HOME.x,HOME.z,50]],320).map(p=>nearestHuman(p[0],p[1],used));
+  scatter(STH,'starD',[
+   ["Human delta.","s28"],["Human consciousness.","s28"],["A powerful entity.","s28"],["Untapped,","s28"],["undirected,","s28"],
+   ["pent up.","s28"],["No path forward,","s28"],["barriers in the Way.","s28"],["IT WILL RAGE.","s28"]
+  ],dH.map((i,k)=>[hx[i],hz[i],CY+hdy[i]+16+(k%3)*9,CY+hdy[i]+3]));
+  const uH=spread(5,37,hubXZ,320).map(p=>nearestHuman(p[0],p[1],used));
+  scatter(STH,'starU',[
+   ["Halos.","s27"],["Infinite energy.","s27"],["Human potential productive energy.","s27"],["Utilized.","s27"],["Energized.","s27"]
+  ],uH.map((i,k)=>[hx[i],hz[i],FY+hdy[i]+16+(k%3)*9,FY+hdy[i]+3]));
+}
 
-/* --- The Vessel (moving) + its shell & cargo --- */
+/* --- The Vessel (moving) with everything it carries --- */
 const VN=addNode({id:'vessel',group:'cargo',kind:'root',label:'THE VESSEL',text:'The Vessel',about:ABOUT.vessel,srcs:['hv'],parent:null,moving:true,isVessel:true,ring:'cargo',lx:0,ly:0,lz:0,r:2.4,minPx:6});
 const AFH=addNode({id:'affH',group:'aff',kind:'sub',label:'AFFIRMATIONS',text:'Affirmations',about:ABOUT.aff,srcs:[],parent:VN,noEdge:true,moving:true,ring:'aff',lx:0,ly:SHELL_R+3,lz:0,r:0.9,minPx:4});
 function ring(group,items,Rl,rname,r0){
@@ -317,6 +354,21 @@ function ring(group,items,Rl,rname,r0){
       moving:true,ring:rname,noEdge:rname==='aff',lx:d[0]*Rl,ly:d[1]*Rl,lz:d[2]*Rl,r:r0,minPx:2.2});
   });
 }
+ring('voice',[
+ ["I'm looking at the church in the night sky.","s1",WHY_P1],
+ ["I'm looking at the sky asking Granny what she think it is.","s3",WHY_P1],
+ ["My body full of trauma.","s3",WHY_P1],
+ ["Keep these bums away from me.","s3",WHY_P1],
+ ["Keep these essays contagious","s3",WHY_P1,"The word \"essays\" is written as the notebook has it; the transcription marks it uncertain."],
+ ["It's okay with me.","s3",WHY_P1],
+ ["What's your name?","s22","","A first attempt is crossed out in the notebook."],
+ ["Dear God make it all right.","s20"],["Save me.","s20"],["Hold me.","s20"]
+],VOICE_R,'voice',0.34);
+ring('sac',[
+ ["Just give me life.","s5",WHY_P1],["I'll take yours.","s5",WHY_P1],
+ ["I'm caught in a trap.","s6",WHY_P1],["And I can't walk out because I love you too much baby.","s6",WHY_P1],
+ ["This is my religion.","s7",WHY_P1],["This is my Sacrifice.","s7",WHY_P1]
+],SAC_R,'sac',0.36);
 ring('cargo',[
  ["Burdened with glorious purpose.","s15"],
  ["The Future State is stored within me.","s8"],
@@ -344,24 +396,8 @@ ring('aff',[
 
 /* extra node bookkeeping */
 const nodeKey=n=>n.ring?n.ring:(n.kind==='el'?n.parent.id:n.id);
-nodes.forEach(n=>{ if(n.kind==='el'&&!n.parent.id) n.parent.id='_'+Math.random(); n.key=nodeKey(n); });
+nodes.forEach(n=>{ n.key=nodeKey(n); });
 const childCount={}; nodes.forEach(n=>{ if(n.parent){ childCount[n.parent.id]=(childCount[n.parent.id]||0)+1; } });
-
-/* ================= humans ================= */
-const hx=new Float32Array(NH), hz=new Float32Array(NH), hdy=new Float32Array(NH);
-{
-  const r=rng(77), cities=[];
-  for(let i=0;i<11;i++) cities.push([(r()*2-1)*270,(r()*2-1)*270,35+r()*45]);
-  hx[0]=HOME.x; hz[0]=HOME.z; hdy[0]=0;
-  for(let i=1;i<NH;i++){
-    let x,z;
-    if(r()<0.7){ const c=cities[(r()*cities.length)|0]; x=c[0]+gauss(r)*c[2]; z=c[1]+gauss(r)*c[2]; }
-    else { x=(r()*2-1)*340; z=(r()*2-1)*340; }
-    hx[i]=clamp(x,-345,345); hz[i]=clamp(z,-345,345); hdy[i]=(r()*2-1)*6;
-  }
-}
-const hsx=new Float32Array(NH*2), hsy=new Float32Array(NH*2), hsz=new Float32Array(NH*2);
-const homeK=new Int16Array(NH).fill(-1);
 
 /* ================= paths, vessels, attempts ================= */
 function makePath(ax,az,bx,bz,amp,wob,pull,ph){
@@ -427,7 +463,7 @@ function mkSpr(c){
   g.fillStyle=gr; g.fillRect(0,0,64,64); return cn;
 }
 const SP={slate:mkSpr([120,145,195]),yel:mkSpr([255,226,150]),warm:mkSpr([255,205,140]),white:mkSpr([255,248,225]),
-  gold:mkSpr([255,214,110]),pink:mkSpr([255,160,200]),violet:mkSpr([150,110,255]),cyan:mkSpr([170,215,255])};
+  gold:mkSpr([255,214,110]),pink:mkSpr([255,160,200]),violet:mkSpr([150,110,255]),cyan:mkSpr([170,215,255]),ember:mkSpr([255,130,70])};
 const DARK=(function(){const cn=document.createElement('canvas');cn.width=cn.height=64;const g=cn.getContext('2d');
   const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(0,0,4,1)');gr.addColorStop(.5,'rgba(2,0,10,.55)');gr.addColorStop(1,'rgba(2,0,10,0)');
   g.fillStyle=gr;g.fillRect(0,0,64,64);return cn;})();
@@ -466,7 +502,7 @@ function fillPoly(pts,fill){
   ctx.beginPath(); out.forEach((o,i)=>{const x=CX+o[0]*F/o[2],y=CYS-o[1]*F/o[2]; i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
   ctx.closePath(); ctx.fillStyle=fill; ctx.fill();
 }
-function circle3(cx,cy,cz,r,n){ // circle in horizontal plane
+function circle3(cx,cy,cz,r,n){
   for(let i=0;i<n;i++){ const a=i/n*TAU,b=(i+1)/n*TAU;
     seg3(cx+Math.cos(a)*r,cy,cz+Math.sin(a)*r,cx+Math.cos(b)*r,cy,cz+Math.sin(b)*r); }
 }
@@ -477,6 +513,7 @@ let sel=null,hover=null,iso=null,chipOn=-1,frozen=false;
 const planeQuad=[{ok:false,p:[]},{ok:false,p:[]}];
 const Q=[]; let LB=[];
 const tmp=[0,0,0];
+const keys=new Set();
 
 /* ================= update ================= */
 function smooth(s){return s*s*(3-2*s);}
@@ -493,14 +530,16 @@ function updateVessels(){
   }
 }
 const isoA=g=>iso?(iso.has(g)?1:0.1):1;
-const beamIso=()=>iso?((iso.has('beam')||iso.has('path')||iso.has('cargo')||iso.has('aff'))?1:.15):1;
+const beamIso=()=>iso?((iso.has('beam')||iso.has('path')||iso.has('cargo')||iso.has('aff')||iso.has('voice')||iso.has('sac'))?1:.15):1;
 function updateWorld(){
-  const v0=V[0], yawA=T*.12, yawC=-T*.2;
+  const v0=V[0], yawA=T*.12;
   for(const n of nodes){
     if(n.moving){
       if(n.isVessel){ n.wx=v0.x; n.wy=v0.y; n.wz=v0.z; }
-      else { const a=n.ring==='aff'?yawA:yawC, c=Math.cos(a), s=Math.sin(a);
-        n.wx=v0.x+n.lx*c+n.lz*s; n.wy=v0.y+n.ly; n.wz=v0.z-n.lx*s+n.lz*c; }
+      else {
+        const a=n.ring==='aff'?yawA:n.ring==='cargo'?-T*.2:n.ring==='voice'?-T*.32:T*.26, c=Math.cos(a), s=Math.sin(a);
+        n.wx=v0.x+n.lx*c+n.lz*s; n.wy=v0.y+n.ly; n.wz=v0.z-n.lx*s+n.lz*c;
+      }
       n.al=isoA(n.group)*v0.alpha;
     } else n.al=isoA(n.group);
   }
@@ -569,21 +608,17 @@ function drawComet(pts,u,head,col0,col1,aMul,wMul,full){
 const hd={x:0,y:0,z:0};
 function drawBeams(){
   const bi=beamIso();
-  // successful beams
   for(let k=0;k<nVes;k++){
     const v=V[k]; if(v.alpha<=.01&&!v.arrived) continue;
     const prim=k===0, a=Math.max(v.alpha,.35)*bi;
     drawComet(v.pts,v.u,v,[255,214,110],[255,246,215],a*(prim?1:.75),prim?1.5:.75,true);
-    // arrival ripple on the future plane
     if(v.arr>0){
       const p=(v.c-.82)/.13, rr2=6+34*clamp(p,0,1); ctx.beginPath(); circle3(hx[v.hi],FY+PT/2+.5,hz[v.hi],rr2,28);
       ctx.strokeStyle='rgba(255,226,150,'+(.8*v.arr*bi)+')'; ctx.lineWidth=1.6; ctx.stroke();
     }
-    // home ring in the current plane
     ctx.beginPath(); circle3(hx[v.hi],CY+PT/2+.5,hz[v.hi],prim?15:8,22);
     ctx.strokeStyle='rgba(255,214,110,'+((.25+.15*Math.sin(tAmb*2+k))*bi)+')'; ctx.lineWidth=1.1; ctx.stroke();
   }
-  // attempts that fade into the void
   for(const at of AT){
     const tau=(T+at.off)%at.P; let u,sp=0,fade=1;
     if(tau<at.dur){ const s=tau/at.dur; u=at.fmax*smooth(s); }
@@ -599,7 +634,6 @@ function drawBeams(){
       }
     }
   }
-  // tendrils of the void reaching for the vessel
   const v0=V[0];
   if(v0.alpha>.05&&v0.y>Y0+30&&v0.y<Y1-30){
     for(let j=0;j<6;j++){
@@ -639,6 +673,7 @@ function drawVessel(k,sx,sy,z){
     glow(sx,sy,Rs*1.3,SP.cyan,.13*al);
     if(prim){
       ctx.globalAlpha=al*.14; ctx.beginPath(); ctx.arc(sx,sy,CARGO_R*s,0,TAU); ctx.stroke();
+      ctx.globalAlpha=al*.12; ctx.beginPath(); ctx.arc(sx,sy,SAC_R*s,0,TAU); ctx.stroke();
       if(Rs>5){
         const yaw=T*.12, c=Math.cos(yaw), sn=Math.sin(yaw); ctx.beginPath();
         const N=36;
@@ -657,10 +692,14 @@ function drawHuman(i,side,sx,sy,z){
   const s=F/z, fut=side===1, k=homeK[i], active=k>=0&&k<nVes;
   const lit=active&&(fut?V[k].arrived:true), arr=(fut&&active)?V[k].arr:0;
   const al=(iso&&!iso.has('humans'))?.12:1;
+  const pent=!fut&&!lit, fl=.65+.35*Math.sin(tAmb*3.1+i*1.7);
   if(s*HH<7){
     const b=Math.max(1.2,s*1.6);
     if(fut){ glow(sx,sy,b*3,SP.warm,.55*al); glow(sx,sy,b*1.3,SP.white,.85*al); }
-    else { glow(sx,sy,b*2.4,SP.slate,.55*al); glow(sx,sy,b*.8,SP.yel,.38*al); }
+    else {
+      glow(sx,sy,b*2.4,SP.slate,.55*al); glow(sx,sy,b*.8,SP.yel,.38*al);
+      if(pent) glow(sx,sy,b*1.7,SP.ember,.42*fl*al);     // pent-up ember in every current-state human
+    }
     if(lit) glow(sx,sy,b*(fut?6:4.5),SP.gold,(fut?.55+.45*arr:.7)*al);
     if(arr>0) glow(sx,sy,b*10,SP.white,.6*arr*al);
   } else {
@@ -672,6 +711,11 @@ function drawHuman(i,side,sx,sy,z){
     const cr=fut?3.4*s:(lit?3*s:1.7*s);
     glow(sx,sy-.1*s,cr*1.8,fut?SP.warm:SP.yel,(fut?.7:(lit?.7:.4))*al);
     glow(sx,sy-.1*s,cr*.7,SP.white,(fut?.95:(lit?.9:.5))*al);
+    if(pent){
+      glow(sx,sy-.1*s,cr*1.5,SP.ember,.5*fl*al);
+      ctx.globalAlpha=al*.6*fl; ctx.strokeStyle='rgb(255,140,80)'; ctx.lineWidth=Math.max(.8,.09*s);
+      ctx.setLineDash([.3*s,.22*s]); ctx.beginPath(); ctx.arc(sx,sy-.1*s,.62*s,0,TAU); ctx.stroke(); ctx.setLineDash([]);  // the barrier around it
+    }
     if(fut||lit){ ctx.globalAlpha=al*.7; ctx.strokeStyle='rgb(255,225,150)'; ctx.lineWidth=Math.max(.8,.12*s);
       ctx.beginPath(); ctx.ellipse(sx,sy-2.3*s,.75*s,.22*s,0,0,TAU); ctx.stroke(); }
     if(arr>0) glow(sx,sy,s*14,SP.white,.5*arr*al);
@@ -682,7 +726,6 @@ function drawHuman(i,side,sx,sy,z){
 function render(dt){
   ctx.setTransform(DPR,0,0,DPR,0,0); ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1;
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // stars
   ctx.fillStyle='#fff';
   for(const st of stars){
     const zz=st.x*fx+st.y*fy+st.z*fz; if(zz<.1) continue;
@@ -693,24 +736,20 @@ function render(dt){
   ctx.globalAlpha=1; ctx.lineCap='round';
   projPlaneCorners();
 
-  // planes (farther first)
   const dF=Math.hypot(px,py-FY,pz), dC=Math.hypot(px,py-CY,pz);
   const drawF=()=>drawPlane(FY,[255,205,150],.075), drawC=()=>drawPlane(CY,[120,140,190],.075);
   ctx.globalCompositeOperation='lighter';
   if(dF>dC){ drawF(); drawC(); } else { drawC(); drawF(); }
 
-  // void rim, axis
   ctx.beginPath(); circle3(0,Y0,0,VR,56); circle3(0,Y1,0,VR,56);
   ctx.strokeStyle='rgba(150,110,255,.38)'; ctx.lineWidth=1.3; ctx.stroke();
   for(let j=1;j<4;j++){ const yy=Y0+(Y1-Y0)*j/4; ctx.beginPath(); circle3(0,yy,0,VR,56); ctx.strokeStyle='rgba(150,110,255,.09)'; ctx.lineWidth=1; ctx.stroke(); }
   ctx.setLineDash([4,7]); ctx.beginPath(); seg3(0,Y0,0,0,Y1,0); ctx.strokeStyle='rgba(143,155,255,.28)'; ctx.lineWidth=1; ctx.stroke(); ctx.setLineDash([]);
 
-  // plane labels
   [[1,FY,'THE FUTURE STATE · plane','#ffd27a'],[0,CY,'THE CURRENT STATE · plane','#9fb2d8']].forEach(p=>{
     toCam(-PS,p[1]+PT/2,PS,A); if(A[2]>=NEAR) addLabel(CX+A[0]*F/A[2],CYS-A[1]*F/A[2]-10,p[2],p[3],11,9,A[2],true,false);
   });
 
-  // update + project: nodes
   Q.length=0; LB=[];
   const selKey=(sel&&sel.type==='node')?sel.node.key:null;
   for(const n of nodes){
@@ -721,7 +760,6 @@ function render(dt){
     n.vis=n.sx>-60&&n.sx<W+60&&n.sy>-60&&n.sy<H+60;
     if(!n.vis||n.al<.02) continue;
     Q.push([A[2],0,n]);
-    // labels
     const isSel=sel&&sel.type==='node'&&sel.node===n, isHov=hover&&hover.type==='node'&&hover.node===n;
     if(n.moving&&n.al<.3&&!isSel) continue;
     let p=0,sz=10.5,bold=false;
@@ -734,7 +772,6 @@ function render(dt){
     let txt=n.kind==='el'?n.text:n.label; if(!isSel&&!isHov&&txt.length>46) txt=txt.slice(0,44)+'…';
     addLabel(n.sx+n.rp+(n.kind==='el'?5:8),n.sy,txt,n.color,sz,p,A[2],bold,false,Math.min(1,n.al*1.2));
   }
-  // humans
   for(let i=0;i<NH;i++){
     for(let side=0;side<2;side++){
       const idx=i*2+side;
@@ -746,7 +783,6 @@ function render(dt){
       Q.push([A[2],1,i,side,sx,sy]);
     }
   }
-  // vessels (k>=1) heads
   for(let k=0;k<MAXV;k++){
     const v=V[k]; v.vis=false;
     if(k>=nVes||v.alpha<=.02) continue;
@@ -754,7 +790,6 @@ function render(dt){
     v.sx=CX+A[0]*F/A[2]; v.sy=CYS-A[1]*F/A[2]; v.sz=A[2]; v.vis=true;
     if(k>0) Q.push([A[2],4,k,v.sx,v.sy]);
   }
-  // void blobs + specks
   const bi=beamIso();
   for(const b of blobs){
     b.a+=b.w*dt*.4;
@@ -773,16 +808,17 @@ function render(dt){
   for(const n of nodes){
     if(!n.parent||n.noEdge||n.al<.05||n.parent.al<.05) continue;
     const hl=sel&&sel.type==='node'&&(sel.node===n||sel.node===n.parent);
-    const a=Math.min(n.al,n.parent.al)*(hl?.8:(n.kind==='el'?.22:.4))*(n.moving?V[0].alpha:1);
+    const a=Math.min(n.al,n.parent.al)*(hl?.8:(n.faint?.06:(n.kind==='el'?.22:.4)))*(n.moving?V[0].alpha:1);
     ctx.beginPath(); seg3(n.parent.wx,n.parent.wy,n.parent.wz,n.wx,n.wy,n.wz);
     ctx.strokeStyle='rgba('+n.rgb.join(',')+','+a+')'; ctx.stroke();
   }
-  // extra links
   const L=(x1,y1,z1,x2,y2,z2,col,a)=>{ ctx.beginPath(); seg3(x1,y1,z1,x2,y2,z2); ctx.strokeStyle='rgba('+col+','+a+')'; ctx.stroke(); };
-  L(FSR.wx,FSR.wy,FSR.wz,0,FY+PT/2,0,'255,210,122',.35*FSR.al);
-  L(CSR.wx,CSR.wy,CSR.wz,0,CY-PT/2,0,'255,106,92',.35*CSR.al);
-  L(VOH.wx,VOH.wy,VOH.wz,HOME.x,CY-PT/2,HOME.z,'224,176,255',.3*VOH.al);
-  L(SACH.wx,SACH.wy,SACH.wz,HOME.x,CY-PT/2,HOME.z,'255,122,168',.3*SACH.al);
+  // stems from spread notes and hubs down to the plane (or to the human they sit over)
+  for(const n of nodes){
+    if(n.stemY!=null&&n.al>.05) L(n.wx,n.wy,n.wz,n.wx,n.stemY,n.wz,n.rgb.join(','),(n.kind==='el'?.17:.28)*n.al);
+  }
+  L(FSR.wx,FSR.wy,FSR.wz,0,FTOP,0,'255,210,122',.3*FSR.al);
+  L(CSR.wx,CSR.wy,CSR.wz,0,CBOT,0,'255,106,92',.35*CSR.al);
   [HB,HV,HP].forEach(h=>L(H4.wx,H4.wy,H4.wz,h.wx,h.wy,h.wz,'143,155,255',.22*Math.min(H4.al,h.al)));
   L(H4.wx,H4.wy,H4.wz,0,(Y0+Y1)/2,0,'143,155,255',.22*H4.al);
   L(STH.wx,STH.wy,STH.wz,V[0].x,V[0].y,V[0].z,'255,241,168',.14*STH.al*V[0].alpha);
@@ -790,7 +826,6 @@ function render(dt){
 
   drawBeams();
 
-  // sorted item pass
   Q.sort((a,b)=>b[0]-a[0]);
   for(const q of Q){
     switch(q[1]){
@@ -803,11 +838,8 @@ function render(dt){
   }
   ctx.globalAlpha=1;
 
-  // labels for vessels' selected, humans selected
   if(sel&&sel.type==='human'){ const idx=sel.i*2+sel.side; if(hsz[idx]>0) addLabel(hsx[idx]+10,hsy[idx],(sel.side?'Citizen':'Human')+' · '+(sel.side?'Future State':'Current State'),sel.side?'#ffd27a':'#9db4d6',12,40,hsz[idx],true,false); }
-  { const v=V[0]; if(v.vis&&v.alpha>.3&&false){} }
 
-  // selection ring
   ctx.globalCompositeOperation='source-over';
   if(sel){
     let sx=0,sy=0,rp=0,ok=false;
@@ -854,7 +886,6 @@ function pickAt(mx,my){
   }
   return bt;
 }
-const same=(a,b)=>a&&b&&a.type===b.type&&(a.node===b.node)&&a.i===b.i&&a.side===b.side&&a.k===b.k;
 
 /* ================= panel ================= */
 const panel=document.getElementById('panel');
@@ -875,7 +906,7 @@ function panelHTML(t){
     h+=tagHTML('humans')+'<h2>'+(fut?'Citizen of the Future State':'Human in the Current State')+'</h2>';
     h+='<p class="ab">'+(fut
       ?'The same human as the one below, now a citizen. Star stuff is in every human; here it is utilized and energized, so it burns brighter (core and halo).'
-      :'Just a human here. Star stuff is in every human, but in this plane it is untapped, undirected, pent up: dim, with no path forward.')+'</p>';
+      :'Just a human here. Star stuff is in every human, but in this plane it is untapped, undirected, pent up in every one of them: a dim ember held in by a ring of barriers, with no path forward.')+'</p>';
     h+='<div class="nt">'+(unl?(k===0?'This is the vessel: its body stays here while its light rides the beam.':'Star stuff unlocked: this human is riding an ultra light beam to its future-state self (vessel #'+(k+1)+').')
       :'Not unlocked. Raise the Vessels slider to see more humans unlock their capacity and cross.')+'</div>';
     h+='<div class="nt">The dashed line joins this human to their counterpart in the other plane, through the 4th dimension.</div>';
@@ -892,7 +923,8 @@ function panelHTML(t){
 }
 function focusDist(t){
   if(t.type==='node'){ const n=t.node;
-    if(n.isVessel) return 42; if(n.moving) return n.ring==='aff'?(n.id==='affH'?44:34):22;
+    if(n.isVessel) return 42;
+    if(n.moving) return n.ring==='aff'?(n.id==='affH'?44:34):(n.ring==='voice'||n.ring==='sac')?12:22;
     return n.kind==='root'?300:n.kind==='sub'?210:150; }
   if(t.type==='human') return 30; if(t.type==='vessel') return 36; return 1250;
 }
@@ -927,7 +959,7 @@ cv.addEventListener('pointermove',e=>{
 });
 function tipText(t){
   if(t.type==='node') return t.node.kind==='el'?t.node.text:t.node.label;
-  if(t.type==='human') return t.side?'Citizen · Future State (star stuff burning bright)':'Human · Current State (star stuff within)';
+  if(t.type==='human') return t.side?'Citizen · Future State (star stuff burning bright)':'Human · Current State (star stuff pent up within)';
   if(t.type==='vessel') return 'Vessel #'+(t.k+1)+' · riding an ultra light beam';
   return t.side?'The Future State · plane':'The Current State · plane';
 }
@@ -944,6 +976,18 @@ cv.addEventListener('pointerup',endPtr); cv.addEventListener('pointercancel',end
 cv.addEventListener('pointerleave',()=>{ hover=null; tip.style.display='none'; });
 cv.addEventListener('wheel',e=>{ e.preventDefault(); cam.distGoal=clamp(cam.distGoal*Math.exp(e.deltaY*.0012),7,3400); },{passive:false});
 
+/* keyboard: free camera (only when nothing is selected) */
+const MOVEKEYS='wasdqe';
+addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  const k=e.key.toLowerCase();
+  if(k==='escape'){ if(sel) select(null); return; }
+  if(k==='shift'){ keys.add('shift'); return; }
+  if(k.length===1&&MOVEKEYS.indexOf(k)>=0){ keys.add(k); e.preventDefault(); }
+});
+addEventListener('keyup',e=>{ const k=e.key.toLowerCase(); keys.delete(k); if(k==='shift') keys.delete('shift'); });
+addEventListener('blur',()=>keys.clear());
+
 /* controls */
 const $=id=>document.getElementById(id);
 const vs=$('vs'),vn=$('vn'),vr=$('vr');
@@ -955,12 +999,12 @@ function setVes(){
   if(sel&&sel.type==='vessel'&&sel.k>=n) select(null);
 }
 vs.addEventListener('input',setVes); setVes();
-$('bPause').onclick=function(){ manualPause=!manualPause; this.classList.toggle('on',manualPause); this.textContent=manualPause?'Resume journey':'Pause journey'; };
-$('bSpin').onclick=function(){ spin=!spin; this.classList.toggle('on',!spin); this.textContent=spin?'Pause spin':'Resume spin'; };
-$('bLab').onclick=function(){ hideEl=!hideEl; this.classList.toggle('on',hideEl); this.textContent=hideEl?'Show element labels':'Hide element labels'; };
-$('bIn').onclick=()=>{ cam.distGoal=clamp(cam.distGoal*.7,7,3400); };
-$('bOut').onclick=()=>{ cam.distGoal=clamp(cam.distGoal/.7,7,3400); };
-$('bReset').onclick=()=>{ select(null); tgoal[0]=tgoal[1]=tgoal[2]=0; cam.distGoal=1750; cam.phi=1.22; cam.theta=cam.theta%TAU; };
+$('bPause').onclick=function(){ manualPause=!manualPause; this.classList.toggle('on',manualPause); this.textContent=manualPause?'Resume journey':'Pause journey'; this.blur(); };
+$('bSpin').onclick=function(){ spin=!spin; this.classList.toggle('on',!spin); this.textContent=spin?'Pause spin':'Resume spin'; this.blur(); };
+$('bLab').onclick=function(){ hideEl=!hideEl; this.classList.toggle('on',hideEl); this.textContent=hideEl?'Show element labels':'Hide element labels'; this.blur(); };
+$('bIn').onclick=function(){ cam.distGoal=clamp(cam.distGoal*.7,7,3400); this.blur(); };
+$('bOut').onclick=function(){ cam.distGoal=clamp(cam.distGoal/.7,7,3400); this.blur(); };
+$('bReset').onclick=function(){ select(null); tgoal[0]=tgoal[1]=tgoal[2]=0; cam.distGoal=1750; cam.phi=1.22; cam.theta=cam.theta%TAU; this.blur(); };
 
 /* legend */
 const CHIPS=[
@@ -977,11 +1021,13 @@ const leg=$('leg');
 CHIPS.forEach((c,i)=>{
   const b=document.createElement('button'); b.className='chip'; b.innerHTML='<i style="background:'+c[2]+'"></i>'+c[0];
   b.onclick=()=>{ if(chipOn===i){chipOn=-1;iso=null;} else {chipOn=i;iso=new Set(c[1]);}
-    [...leg.children].forEach((x,j)=>x.classList.toggle('on',j===chipOn)); };
+    [...leg.children].forEach((x,j)=>x.classList.toggle('on',j===chipOn)); b.blur(); };
   leg.appendChild(b);
 });
 
 /* ================= main loop ================= */
+const modeEl=$('mode');
+let modeTxt='';
 function frame(now){
   requestAnimationFrame(frame);
   const dt=Math.min(.05,Math.max(0,(now-last)/1000)||0.016); last=now;
@@ -990,11 +1036,26 @@ function frame(now){
   if(!frozen) T+=dt;
   if(spin&&!dragging) cam.theta+=dt*.035;
   updateVessels(); updateWorld();
-  if(sel){ tpos(sel,tmp); tgoal[0]=tmp[0];tgoal[1]=tmp[1];tgoal[2]=tmp[2]; }
+  if(sel){
+    tpos(sel,tmp); tgoal[0]=tmp[0];tgoal[1]=tmp[1];tgoal[2]=tmp[2];
+  } else if(keys.size){
+    // free camera: WASD along the ground relative to the view, Q/E down/up, Shift faster
+    const fl=Math.hypot(fx,fz)||1, hfx=fx/fl, hfz=fz/fl;
+    let mx=0,mz=0,my=0;
+    if(keys.has('w')){mx+=hfx;mz+=hfz;} if(keys.has('s')){mx-=hfx;mz-=hfz;}
+    if(keys.has('d')){mx+=rx;mz+=rz;}   if(keys.has('a')){mx-=rx;mz-=rz;}
+    if(keys.has('e')) my+=1;            if(keys.has('q')) my-=1;
+    const sp=Math.max(140,cam.dist*.7)*(keys.has('shift')?3:1)*dt;
+    tgoal[0]=clamp(tgoal[0]+mx*sp,-1200,1200);
+    tgoal[1]=clamp(tgoal[1]+my*sp,-800,800);
+    tgoal[2]=clamp(tgoal[2]+mz*sp,-1200,1200);
+  }
   const kf=1-Math.exp(-dt*(isVesselHead(sel)?10:5));
   cam.tx+=(tgoal[0]-cam.tx)*kf; cam.ty+=(tgoal[1]-cam.ty)*kf; cam.tz+=(tgoal[2]-cam.tz)*kf;
   cam.dist+=(cam.distGoal-cam.dist)*(1-Math.exp(-dt*5));
   setCam();
+  const mt=sel?'Centered on selection · Esc to go free':'Free camera · W A S D move · Q / E down / up · Shift faster';
+  if(mt!==modeTxt){ modeTxt=mt; modeEl.textContent=mt; }
   render(dt);
 }
 requestAnimationFrame(t=>{last=t;frame(t);});
