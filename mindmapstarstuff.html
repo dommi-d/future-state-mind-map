@@ -75,7 +75,7 @@ canvas{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
 const TAU=Math.PI*2, NEAR=0.6, FOV=0.82;
 const CY=-320, FY=320;
 const PS=360, PT=22;
-const VR=190;
+const VR=PS;                    // half-width of the void: it spans the full square of the planes, corner to corner
 const NH=420, MAXV=48, HH=4;
 const Y0=CY+PT/2+1, Y1=FY-PT/2-1;
 const CTOP=CY+PT/2, CBOT=CY-PT/2, FTOP=FY+PT/2;
@@ -147,7 +147,7 @@ const GR={
  sac:{n:'The Vessel · Sacrifice (inside)',c:'#ff7aa8'},
  fourd:{n:'The 4th dimension',c:'#8f9bff'},
  beam:{n:'The ultra light beam (the path the vessel rides)',c:'#ffe28a'},
- void:{n:'The void (low in the void, nearer the current state)',c:'#a66bff'},
+ void:{n:'The void (low, and out toward the edge)',c:'#a66bff'},
  path:{n:'The narrow path (through the void, on the beam)',c:'#fff0b8'},
  star:{n:'We are star stuff',c:'#fff1a8'},
  starC:{n:'Star stuff · the energy inside every human',c:'#fff1a8'},
@@ -167,7 +167,7 @@ const ABOUT={
  cur:"The parts of the current state that are not good, spread across the whole plane, each joined to this heading by a red line that stays on. Heading spelled as written in the notebook.",
  fourd:"What lies between the planes. Both planes are 3rd dimensional and both are real. The vessel connects them through the 4th dimension.",
  beam:"The ultra light beam is what the vessel rides: the glowing path from the human in the current state, up through the void, to the future state. Its notes are pinned along the first vessel's beam, from the call to escape the current plane at the bottom to the anchor in the future state at the top, and they brighten as the vessel passes. Every other vessel has a beam of the same kind, so they carry no duplicate notes. The fainter beams that curl and dissolve in the void are attempts that did not make it through.",
- void:"The void sits between both planes, in the 4th dimension. Its hub and notes sit inside it, low down and nearer the current state than the future state, because the out they speak of leads back to the current state. Soft clouds fill the whole void and show what pulls at the vessel; they never pass through the shell of affirmations. The clouds can be toggled off.",
+ void:"The void sits between both planes, in the 4th dimension, and spans the full width of the planes out to all four corners. Its hub and notes sit inside it, low down and nearer the current state than the future state, because the out they speak of leads back to the current state. The hub is also out toward the edge: farther from the center of the void than it is from the edge of the current state. Soft clouds fill the whole void and show what pulls at the vessel; they never pass through the shell of affirmations. The clouds can be toggled off.",
  star:"Humans are star stuff, and so is the vessel. It is inside every human (the glowing core in each figure). In the current state it is untapped, undirected, pent up in every human (a dim, confined ember), with those notes spread across the plane and each sitting over a human. In the future state it is utilized and energized in every citizen (a bright core and halo). Infinite energy is all of those cores together. If more humans unlock it, they too can ride an ultra light beam across the void, shining into the future state. Use the Vessels slider.",
  aff:"The shell around the vessel. The affirmations stabilize it, keep it on course, and shield it from the pull of the void.",
  vessel:"One of the humans. Physically in the 3rd dimension of the current state, but what it holds, its burden and its purpose, belongs to the future state. Inside it: its own voice, its sacrifice, its burden and purpose. Around it: the affirmations. Its body stays rooted at its home in the current plane while its light rides the ultra light beam through the void to its counterpart in the future state."
@@ -353,19 +353,23 @@ const CURH=hub('hub_cur','cur','sub','CATESTROPHIC CONDITION',0,CY-85,0,ABOUT.cu
   ],pts,true);
 }
 
-/* --- Between: 4th dimension (beside the void) and the void (hub inside it, low down) --- */
+/* --- Between: 4th dimension (beside the void) and the void (hub inside it, low down and out toward the edge) --- */
 const pol=(d,r,y)=>[Math.cos(d*Math.PI/180)*r,y,Math.sin(d*Math.PI/180)*r];
 let pp=pol(200,315,30);  const H4=hub('hub_fourd','fourd','sub','THE 4TH DIMENSION',pp[0],pp[1],pp[2],ABOUT.fourd,null,[]);
-// the void's hub: a random spot inside the void, in its lower part (nearer the current state than the future state),
-// away from the axis and clear of the first vessel's beam
+// the void's hub: a random spot inside the void with
+//  - height in the lower part (y from -245 to -80; the midpoint is 0), so nearer the current state than the future state
+//  - |x| from 200 to 305: farther from the center of the void than from the edge of the current plane (edge at |x| = 360, so the tipping point is 180)
+//  - clear of the first vessel's beam and of the other hubs
 const HVp=(function(){
-  const r=rng(61), p=V[0].pts; let best=[60,-160,60], bd=-1;
-  for(let t=0;t<200;t++){
-    const a=r()*TAU, rad=35+r()*95, y=-245+r()*165;      // y between -245 and -80; the midpoint is 0
-    const x=Math.cos(a)*rad, z=Math.sin(a)*rad; let d=1e9;
+  const r=rng(61), p=V[0].pts, avoid=[pol(200,315,30),pol(140,320,0)];
+  let best=[230,-160,60], bd=-1;
+  for(let t=0;t<300;t++){
+    const x=(r()<.5?-1:1)*(200+r()*105), z=(r()*2-1)*270, y=-245+r()*165;
+    let d=1e9;
     for(let i=0;i<=PN;i++) d=Math.min(d,Math.hypot(p[i*3]-x,p[i*3+1]-y,p[i*3+2]-z));
+    for(const a of avoid) d=Math.min(d,Math.hypot(a[0]-x,a[1]-y,a[2]-z));
     if(d>bd){bd=d;best=[x,y,z];}
-    if(d>80) break;
+    if(d>90) break;
   }
   return best;
 })();
@@ -438,7 +442,9 @@ ring('voice',[
  ["Keep these essays contagious","s3",WHY_P1,"The word \"essays\" is written as the notebook has it; the transcription marks it uncertain."],
  ["It's okay with me.","s3",WHY_P1],
  ["What's your name?","s22","","A first attempt is crossed out in the notebook."],
- ["Dear God make it all right.","s20"],["Save me.","s20"],["Hold me.","s20"]
+ ["Dear God make it all right.","s20","","God holds the vessel through the void. This is not part of the bell idea."],
+ ["Save me.","s20","","God holds the vessel through the void. This is not part of the bell idea."],
+ ["Hold me.","s20","","God holds the vessel through the void. This is not part of the bell idea."]
 ],VOICE_R,'voice',0.34);
 ring('sac',[
  ["Just give me life.","s5",WHY_P1],["I'll take yours.","s5",WHY_P1],
@@ -498,20 +504,19 @@ const childCount={}; nodes.forEach(n=>{ if(n.parent){ childCount[n.parent.id]=(c
 /* ================= void: clouds, specks, stars ================= */
 const puffs=[], specks=[], stars=[];
 {
-  const r=rng(41), NP=300;
-  // clouds are spaced evenly through the WHOLE void (rim to rim, floor to ceiling), not bunched at the middle
+  const r=rng(41), NP=750, EXT=PS-8;
+  // clouds are spaced evenly through the WHOLE void: the full square of the planes (all four corners), floor to ceiling
   for(let i=0;i<NP;i++){
     let best=null,bd=-1;
     for(let t=0;t<14;t++){
-      const a=r()*TAU, rad=VR*Math.sqrt(r()), y=Y0+4+r()*(Y1-Y0-8);
-      const x=Math.cos(a)*rad, z=Math.sin(a)*rad; let d=1e9;
+      const x=(r()*2-1)*EXT, z=(r()*2-1)*EXT, y=Y0+14+r()*(Y1-Y0-28); let d=1e9;
       for(const q of puffs){ const dd=Math.hypot(q.x0-x,q.y0-y,q.z0-z); if(dd<d) d=dd; }
-      if(d>bd){bd=d;best=[a,rad,y,x,z];}
+      if(d>bd){bd=d;best=[x,y,z];}
     }
-    puffs.push({a:best[0],r:best[1],y0:best[2],x0:best[3],z0:best[4],rad:28+r()*22,
+    puffs.push({x0:best[0],y0:best[1],z0:best[2],rad:34+r()*24,dx:12+r()*16,dz:12+r()*16,
       w:(r()*.16+.04)*(r()<.5?-1:1),v:Math.floor(r()*3),al:.4+r()*.35,bob:r()*TAU});
   }
-  for(let i=0;i<320;i++) specks.push({a:r()*TAU,r:8+r()*(VR-8),y:Y0+20+r()*(Y1-Y0-40),w:.3+r()*.6,inw:4+r()*8});
+  for(let i=0;i<520;i++) specks.push({x0:(r()*2-1)*PS,z0:(r()*2-1)*PS,y:Y0+10+r()*(Y1-Y0-20),w:.3+r()*.6,p:r()*TAU,am:6+r()*10,al:.18+r()*.4});
   for(let i=0;i<260;i++){ const v=[r()*2-1,r()*2-1,r()*2-1]; const l=Math.hypot(v[0],v[1],v[2])||1;
     stars.push({x:v[0]/l,y:v[1]/l,z:v[2]/l,b:.25+r()*.6,sz:r()<.12?2:1,t:.5+r()*2,p:r()*TAU}); }
 }
@@ -585,6 +590,9 @@ function fillPoly(pts,fill){
 function circle3(cx,cy,cz,r,n){
   for(let i=0;i<n;i++){ const a=i/n*TAU,b=(i+1)/n*TAU;
     seg3(cx+Math.cos(a)*r,cy,cz+Math.sin(a)*r,cx+Math.cos(b)*r,cy,cz+Math.sin(b)*r); }
+}
+function square3(y,s){
+  seg3(-s,y,-s,s,y,-s); seg3(s,y,-s,s,y,s); seg3(s,y,s,-s,y,s); seg3(-s,y,s,-s,y,-s);
 }
 
 /* ================= state ================= */
@@ -720,10 +728,11 @@ function drawBeams(){
       }
     }
   }
+  // tendrils of the void reaching for the vessel from around it
   const v0=V[0];
   if(v0.alpha>.05&&v0.y>Y0+30&&v0.y<Y1-30){
     for(let j=0;j<6;j++){
-      const a=j*TAU/6+T*.2, sx0=Math.cos(a)*VR, sz0=Math.sin(a)*VR, sy0=v0.y+Math.sin(T+j*2)*30;
+      const a=j*TAU/6+T*.2, sx0=clamp(v0.x+Math.cos(a)*130,-VR,VR), sz0=clamp(v0.z+Math.sin(a)*130,-VR,VR), sy0=v0.y+Math.sin(T+j*2)*30;
       const dx=sx0-v0.x, dy=sy0-v0.y, dz=sz0-v0.z, l=Math.hypot(dx,dy,dz)||1, e=SHELL_R*1.25;
       const ex=v0.x+dx/l*e, ey=v0.y+dy/l*e, ez=v0.z+dz/l*e;
       const mx=(sx0+ex)/2+Math.sin(T*1.3+j)*20, my=(sy0+ey)/2+Math.cos(T+j)*14, mz=(sz0+ez)/2+Math.cos(T*1.1+j)*20;
@@ -836,10 +845,11 @@ function render(dt){
   ctx.globalCompositeOperation='lighter';
   if(dF>dC){ drawF(); drawC(); } else { drawC(); drawF(); }
 
-  ctx.beginPath(); circle3(0,Y0,0,VR,56); circle3(0,Y1,0,VR,56);
-  ctx.strokeStyle='rgba(150,110,255,.38)'; ctx.lineWidth=1.3; ctx.stroke();
-  for(let j=1;j<4;j++){ const yy=Y0+(Y1-Y0)*j/4; ctx.beginPath(); circle3(0,yy,0,VR,56); ctx.strokeStyle='rgba(150,110,255,.09)'; ctx.lineWidth=1; ctx.stroke(); }
-  ctx.setLineDash([4,7]); ctx.beginPath(); seg3(0,Y0,0,0,Y1,0); ctx.strokeStyle='rgba(143,155,255,.28)'; ctx.lineWidth=1; ctx.stroke(); ctx.setLineDash([]);
+  // the void's outline: the full square of the planes, with its four vertical corners (no center line)
+  ctx.beginPath(); square3(Y0,VR); square3(Y1,VR);
+  [[-VR,-VR],[VR,-VR],[VR,VR],[-VR,VR]].forEach(c=>seg3(c[0],Y0,c[1],c[0],Y1,c[1]));
+  ctx.strokeStyle='rgba(150,110,255,.34)'; ctx.lineWidth=1.3; ctx.stroke();
+  for(let j=1;j<4;j++){ const yy=Y0+(Y1-Y0)*j/4; ctx.beginPath(); square3(yy,VR); ctx.strokeStyle='rgba(150,110,255,.09)'; ctx.lineWidth=1; ctx.stroke(); }
 
   [[1,FY,'THE FUTURE STATE · plane','#ffd27a'],[0,CY,'THE CURRENT STATE · plane','#9fb2d8']].forEach(p=>{
     toCam(-PS,p[1]+PT/2,PS,A); if(A[2]>=NEAR) addLabel(CX+A[0]*F/A[2],CYS-A[1]*F/A[2]-10,p[2],p[3],11,9,A[2],true,false);
@@ -887,13 +897,13 @@ function render(dt){
   }
   const bi=beamIso();
 
-  // void clouds: fill the whole void, drift, are drawn gently toward the vessel, but are kept outside every shell
+  // void clouds: fill the whole void out to all four corners, drift in place, are drawn gently toward the vessel, but are kept outside every shell
   let hits=0;
   if(cloudsOn){
     const iA=iso?(iso.has('void')?1:.15):1;
     for(const p of puffs){
-      p.a+=p.w*dt*.5;
-      let x=Math.cos(p.a)*p.r, y=p.y0+Math.sin(tAmb*.3+p.bob)*10, z=Math.sin(p.a)*p.r;
+      const ph=tAmb*p.w*2+p.bob;
+      let x=p.x0+Math.sin(ph)*p.dx, y=p.y0+Math.sin(tAmb*.3+p.bob)*10, z=p.z0+Math.cos(ph*.9)*p.dz;
       for(let k=0;k<nVes;k++){
         const v=V[k]; if(v.alpha<.02) continue;
         const minD=(k?SHELL_R2:SHELL_R)+p.rad*.75;
@@ -913,12 +923,10 @@ function render(dt){
 
   const vs0=V[0];
   for(const sp of specks){
-    sp.a+=sp.w*dt*(60/(sp.r+30)); sp.r-=sp.inw*dt;
-    if(sp.r<6){ sp.r=VR; sp.a=R()*TAU; sp.y=Y0+20+R()*(Y1-Y0-40); }
-    const wx=Math.cos(sp.a)*sp.r, wz=Math.sin(sp.a)*sp.r;
-    if(vs0.alpha>.02&&Math.hypot(wx-vs0.x,sp.y-vs0.y,wz-vs0.z)<SHELL_R*1.15) continue;
-    toCam(wx,sp.y,wz,A); if(A[2]<NEAR) continue;
-    const s=F/A[2]; Q.push([A[2],2,CX+A[0]*s,CYS-A[1]*s,Math.max(1.2,1.5*s),.18+.4*(sp.r/VR)]);
+    const wx=sp.x0+Math.sin(tAmb*sp.w+sp.p)*sp.am, wz=sp.z0+Math.cos(tAmb*sp.w*.8+sp.p)*sp.am, wy=sp.y+Math.sin(tAmb*sp.w*.7+sp.p)*sp.am*.6;
+    if(vs0.alpha>.02&&Math.hypot(wx-vs0.x,wy-vs0.y,wz-vs0.z)<SHELL_R*1.15) continue;
+    toCam(wx,wy,wz,A); if(A[2]<NEAR) continue;
+    const s=F/A[2]; Q.push([A[2],2,CX+A[0]*s,CYS-A[1]*s,Math.max(1.2,1.5*s),sp.al]);
   }
 
   // edges
@@ -937,7 +945,6 @@ function render(dt){
   L(FSR.wx,FSR.wy,FSR.wz,0,FTOP,0,'255,210,122',.3*FSR.al);
   L(CSR.wx,CSR.wy,CSR.wz,0,CBOT,0,'255,106,92',.35*CSR.al);
   L(H4.wx,H4.wy,H4.wz,HV.wx,HV.wy,HV.wz,'143,155,255',.22*Math.min(H4.al,HV.al));
-  L(H4.wx,H4.wy,H4.wz,0,(Y0+Y1)/2,0,'143,155,255',.22*H4.al);
   L(STH.wx,STH.wy,STH.wz,V[0].x,V[0].y,V[0].z,'255,241,168',.14*STH.al*V[0].alpha);
   if(sel&&sel.type==='human'){ ctx.setLineDash([3,5]); L(hx[sel.i],CY+hdy[sel.i],hz[sel.i],hx[sel.i],FY+hdy[sel.i],hz[sel.i],'255,255,255',.3); ctx.setLineDash([]); }
   // notes that belong together: lines shown while one of them is selected
