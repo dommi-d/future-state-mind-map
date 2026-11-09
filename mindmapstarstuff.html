@@ -173,7 +173,7 @@ const ABOUT={
  cur:"The parts of the current state that are not good, spread across the whole plane, each joined to this heading by a red line that stays on. Heading spelled as written in the notebook.",
  fourd:"What lies between the planes. Both planes are 3rd dimensional and both are real. The vessel connects them through the 4th dimension.",
  beam:"The ultra light beam is what the vessel rides: the glowing path from the human in the current state, up through the void, to the future state. Its notes are pinned along the first vessel's beam, from the call to escape the current plane at the bottom to the anchor in the future state at the top, and they brighten as the vessel passes. Every other vessel has a beam of the same kind, so they carry no duplicate notes. The fainter beams that curl and dissolve in the void are attempts that did not make it through.",
- void:"The void sits between both planes, in the 4th dimension, and spans the full width of the planes out to all four corners. Its hub and notes sit inside it, low down and nearer the current state than the future state, because the out they speak of leads back to the current state. The hub is also out toward the edge: farther from the center of the void than it is from the edge of the current state. Soft clouds fill the whole void and show what pulls at the vessel; they never pass through the shell of affirmations. The clouds can be toggled off.",
+ void:"The void sits between both planes, in the 4th dimension, and spans the full width of the planes out to all four corners. It has no outline; the clouds alone mark it. Its hub and notes sit inside it, low down and nearer the current state than the future state, because the out they speak of leads back to the current state. The hub is also out toward the edge: farther from the center of the void than it is from the edge of the current state. Soft clouds fill the whole void and show what pulls at the vessel; they never pass through the shell of affirmations. The clouds can be toggled off.",
  star:"Humans are star stuff, and so is the vessel. It is inside every human (the glowing core in each figure). In the current state it is untapped, undirected, pent up in every human (a dim, confined ember), with those notes spread across the plane and each sitting over a human. In the future state it is utilized and energized in every citizen (a bright core and halo). Infinite energy is all of those cores together. If more humans unlock it, they too can ride an ultra light beam across the void, shining into the future state. Use the Vessels slider.",
  aff:"The shell around the vessel. The affirmations stabilize it, keep it on course, and shield it from the pull of the void.",
  vessel:"One of the humans. Physically in the 3rd dimension of the current state, but what it holds, its burden and its purpose, belongs to the future state. Inside it: its own voice, its sacrifice, its burden and purpose. Around it: the affirmations. Its body stays rooted at its home in the current plane while its light rides the ultra light beam through the void to its counterpart in the future state."
@@ -597,9 +597,6 @@ function circle3(cx,cy,cz,r,n){
   for(let i=0;i<n;i++){ const a=i/n*TAU,b=(i+1)/n*TAU;
     seg3(cx+Math.cos(a)*r,cy,cz+Math.sin(a)*r,cx+Math.cos(b)*r,cy,cz+Math.sin(b)*r); }
 }
-function square3(y,s){
-  seg3(-s,y,-s,s,y,-s); seg3(s,y,-s,s,y,s); seg3(s,y,s,-s,y,s); seg3(-s,y,s,-s,y,-s);
-}
 
 /* ================= state ================= */
 let T=0,tAmb=0,last=0,nVes=1,manualPause=false,spin=true,hideEl=false,cloudsOn=true,dragging=false;
@@ -851,11 +848,7 @@ function render(dt){
   ctx.globalCompositeOperation='lighter';
   if(dF>dC){ drawF(); drawC(); } else { drawC(); drawF(); }
 
-  // the void's outline: the full square of the planes, with its four vertical corners (no center line)
-  ctx.beginPath(); square3(Y0,VR); square3(Y1,VR);
-  [[-VR,-VR],[VR,-VR],[VR,VR],[-VR,VR]].forEach(c=>seg3(c[0],Y0,c[1],c[0],Y1,c[1]));
-  ctx.strokeStyle='rgba(150,110,255,.34)'; ctx.lineWidth=1.3; ctx.stroke();
-  for(let j=1;j<4;j++){ const yy=Y0+(Y1-Y0)*j/4; ctx.beginPath(); square3(yy,VR); ctx.strokeStyle='rgba(150,110,255,.09)'; ctx.lineWidth=1; ctx.stroke(); }
+  // (no outline for the void: its extent is shown only by the clouds)
 
   [[1,FY,'THE FUTURE STATE · plane','#ffd27a'],[0,CY,'THE CURRENT STATE · plane','#9fb2d8']].forEach(p=>{
     toCam(-PS,p[1]+PT/2,PS,A); if(A[2]>=NEAR) addLabel(CX+A[0]*F/A[2],CYS-A[1]*F/A[2]-10,p[2],p[3],11,9,A[2],true,false);
