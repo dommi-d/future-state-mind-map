@@ -25,7 +25,6 @@ canvas{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
 .chip{display:flex;align-items:center;gap:6px;padding:4px 9px;font-size:11px;background:rgba(10,12,26,.6)}
 .chip i{width:8px;height:8px;border-radius:50%;display:inline-block}
 .chip.on{border-color:#fff;background:rgba(255,255,255,.18)}
-#hint{position:fixed;left:12px;bottom:10px;font-size:11px;opacity:.6;max-width:min(560px,54vw);line-height:1.4;pointer-events:none;text-shadow:0 0 8px #000}
 #mode{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);font-size:11px;padding:4px 10px;border-radius:999px;pointer-events:none;background:rgba(10,12,26,.7);border:1px solid rgba(160,170,255,.25)}
 #tip{position:fixed;pointer-events:none;display:none;font-size:11.5px;padding:4px 8px;border-radius:6px;background:rgba(5,6,16,.88);border:1px solid rgba(180,190,255,.3);max-width:280px;z-index:5}
 #panel{position:fixed;right:12px;bottom:12px;width:min(370px,calc(100vw - 24px));max-height:58vh;overflow:auto;padding:14px 16px 14px;display:none;font-size:13px;line-height:1.45}
@@ -53,7 +52,7 @@ canvas{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
 #menuTab:hover{background:rgba(150,160,255,.35)}
 #walk{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(700px,calc(100vw - 24px));padding:12px 16px 10px;display:none;z-index:7}
 body.walking #walk{display:block}
-body.walking #hint,body.walking #mode,body.walking #menuTab,body.walking #panel{display:none!important}
+body.walking #mode,body.walking #menuTab,body.walking #panel{display:none!important}
 #wChap{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
 #wChap button{font-size:10.5px!important;letter-spacing:.05em;padding:3px 9px!important}
 #wChap button.on{background:rgba(255,210,120,.3)!important;border-color:rgba(255,210,120,.7)!important}
@@ -66,7 +65,7 @@ body.walking #hint,body.walking #mode,body.walking #menuTab,body.walking #panel{
 #wCount{margin-left:auto;font-size:11px;opacity:.65}
 #wBar{height:2px;background:rgba(255,255,255,.12);margin-top:9px;border-radius:2px;overflow:hidden}
 #wBar i{display:block;height:100%;width:0;background:#ffd27a}
-@media (max-width:720px){#hint{display:none}#panel{max-height:44vh}.sl input{width:110px}#wCap q{font-size:15px}}
+@media (max-width:720px){#panel{max-height:44vh}.sl input{width:110px}#wCap q{font-size:15px}}
 </style>
 </head>
 <body>
@@ -96,7 +95,6 @@ body.walking #hint,body.walking #mode,body.walking #menuTab,body.walking #panel{
 <div id="tip"></div>
 <div id="mode"></div>
 <button id="menuTab" title="Hide / show menu (M)">‹</button>
-<div id="hint">Hollow ring = my placement call. Click anything to center the camera on it; the journey only stops with the Pause button. With nothing selected: W A S D move, Q / E down / up, Shift faster. Esc or click empty space to deselect. M hides or shows the menu. "Experimental Tour" starts the guided story (the wheel still zooms during it). Drag to rotate · wheel or pinch to zoom.</div>
 <div id="panel" class="glass"></div>
 <div id="walk" class="glass">
   <div id="wChap"></div>
@@ -339,7 +337,7 @@ function scatter(parent,group,items,pts,strong){
 }
 const byText=t=>nodes.find(n=>n.text===t);
 const rr=n=>36+12*Math.sqrt(n);
-const WHY_P1="Page 1 has no section heading above this line, so placing it with the vessel's own voice is my call.";
+const WHY_P1="Page 1 has no section heading above this line, so it is placed with the vessel's own voice.";
 const WAR="There's a war going on outside we ain't safe from";
 const NOBELL="DO NOT ring that bell.";
 
@@ -364,7 +362,7 @@ scatter(DESTH,'dest',[
  ["To be forgotten.","s11"],
  ["The former things are passed away.","s11"],
  ["Great civilization which takes us to higher forms.","s26"],
- ["Take me to the Future State","h1","The notebook uses this as a page heading. I made it a note because it is the plea the whole destination answers."]
+ ["Take me to the Future State","h1","The notebook uses this as a page heading. It is made a note because it is the plea the whole destination answers."]
 ],spread(8,11,hubXZ,305).map((p,i)=>[p[0],p[1],FTOP+16+(i%3)*11,FTOP]),true);
 
 cluster(fsSub.look,fsSub.look,'look',[
@@ -377,7 +375,7 @@ cluster(fsSub.feel,fsSub.feel,'feel',[
  ["Sustaining.","s25"],["Nourishing.","s25"],["Flourishing.","s25"],
  ["Let God's children be close to their Father.","s13","It sits at the end of the sunsets-domes-hills bullet, but it describes how the place feels rather than how it looks."],
  ["If sacred places are spared the ravages of war... then make all places sacred.","s12","Cut from the end of the page 1 paragraph. It is about the character of its places, so it sits under how it feels."],
- ["No child left behind.","s31","In the notebook bullet it sits among the conditions of the current state. You said it belongs with having more vessels and with the Father line, so I moved it here beside that line."]
+ ["No child left behind.","s31","In the notebook bullet it sits among the conditions of the current state. It is moved here beside the Father line because it belongs with having more vessels and with that line."]
 ],rr(6),FB);
 cluster(fsSub.cit,fsSub.cit,'cit',[
  ["Citizens of the Future State.","s26"],
@@ -392,7 +390,7 @@ cluster(fsSub.act,fsSub.act,'act',[
 ],rr(6),FB);
 cluster(fsSub.life,fsSub.life,'life',[
  ["what we breathe.","s26"],["Culture.","s26"],["Human Flourishing","s25"],
- ["Abundance","s2","The last word of the Inception bullet, which has no punctuation. I placed it as a quality of life there."]
+ ["Abundance","s2","The last word of the Inception bullet, which has no punctuation. It is placed as a quality of life there."]
 ],rr(4),FB);
 
 /* --- Future State, from the passage you added: two nodes, joined to each other and to the future state --- */
@@ -425,7 +423,7 @@ const CURH=hub('hub_cur','cur','sub','CATESTROPHIC CONDITION',0,CY-85,0,ABOUT.cu
    ["GI, Your government has abandoned you.","s21","Sits under The Vessel on page 2, but it describes the current state failing the people in it."],
    ["They have ordered you to die.","s21","Same as above: a condition of the current state."],
    ["It is not safe out here","s21","Same as above: a condition of the current state."],
-   ["The trough","","From your added passage, which is not in the notebook. I placed it after the other conditions, in the current state, as you asked."]
+   ["The trough","","From your added passage, which is not in the notebook. It is placed after the other conditions, in the current state, as you asked."]
   ],pts,true);
 }
 const CHI=byText(WAR), TRO=byText("The trough");
@@ -535,20 +533,20 @@ ring('cargo',[
  ["Revolutionary.","s19"],["Biblical level.","s19"],["Moment in history.","s19"],
  ["To whom much is given, much will be required.","s16"],
  ["The glory which shall be revealed in us","s16"],
- ["We are here to bring love.","s2","Same bullet as \"Inception. 4th Dimension.\", but it states the mission, so I put it with what the vessel carries."],
- ["Fight for [word blacked out] Me.","s8","Page 1 has no heading above it. It reads as a call the vessel carries, so I put it with the cargo."]
+ ["We are here to bring love.","s2","Same bullet as \"Inception. 4th Dimension.\", but it states the mission, so it is put with what the vessel carries."],
+ ["Fight for [word blacked out] Me.","s8","Page 1 has no heading above it. It reads as a call the vessel carries, so it is put with the cargo."]
 ],CARGO_R,'cargo',0.55);
 ring('aff',[
  ["God does not call the qualified.","s16"],["He qualifies the called.","s16"],
  ["Be not conformed to this world","s12,s16"],["but be ye transformed by the renewing of your mind.","s16"],
  ["Protect yourself.","s12"],["Protect the vessel.","s12"],["Carry it.","s12"],["Entrench it.","s12"],
  ["Hold tight to your vision.","s18"],
- ["Your life is not yours.","s18","Could be burden or affirmation. I kept it with the line before it in the shell."],
- ["I deserve it all.","s3","Page 1 has no heading above it. I treated it as an affirmation that steadies the vessel.","Written twice in the same bullet."],
+ ["Your life is not yours.","s18","Could be burden or affirmation. It is kept with the line before it in the shell."],
+ ["I deserve it all.","s3","Page 1 has no heading above it. It is treated as an affirmation that steadies the vessel.","Written twice in the same bullet."],
  ["Confrontation ain't nothing new to me.","s4"],
- ["Ain't nobody bigger than the program, 'til you're bigger than the program.","s8","Page 1 has no heading above it. I treated it as an affirmation that keeps the vessel on course."],
+ ["Ain't nobody bigger than the program, 'til you're bigger than the program.","s8","Page 1 has no heading above it. It is treated as an affirmation that keeps the vessel on course."],
  [NOBELL,"s20","","Your edit: the notebook transcription reads \"You CANNOT ring that bell.\" The line that holds against the pull to quit, so it sits in the shell."],
- ["Creed.","s22","Unclear whether this answers \"What's your name?\" or starts the run of affirmations. I kept it with the shell.","A first attempt at the name is crossed out in the notebook."],
+ ["Creed.","s22","Unclear whether this answers \"What's your name?\" or starts the run of affirmations. It is kept with the shell.","A first attempt at the name is crossed out in the notebook."],
  ["Urgency.","s22","Part of the same run as \"Creed.\""],
  ["We are so close","s22"],["Tho our enemies have ammo, we will be protected.","s22"],["We will Carry and do battle.","s22"]
 ],SHELL_R,'aff',0.8);
@@ -584,7 +582,7 @@ const LINKS={
 Object.keys(LINKS).forEach(k=>LINKS[k].members.forEach(n=>{ n.link=k; }));
 byText("Great civilization which takes us to higher forms.").note="Your added passage expands this line. Selecting it shows how it joins Great civilization and Looking upwards.";
 
-/* --- mirrors: a problem below and the answer above (my pairing, shown only with the Mirrors toggle) --- */
+/* --- mirrors: a problem below and the answer above (an interpretive pairing, shown only with the Mirrors toggle) --- */
 const MIRRORS=[
  ["Poverty.","Human Flourishing"],
  ["Loss of agency.","What we build,"],
@@ -1176,7 +1174,7 @@ function panelHTML(t){
       h+='<div class="lnk"><div class="lbl">'+esc(Lk.label)+'</div>'+esc(Lk.body)+'<div class="nt">Notes explained together: '+Lk.members.map(m=>esc(m.text)).join(' · ')+'</div></div>';
     }
     if(n.mir){
-      h+='<div class="lnk"><div class="lbl">Mirror · my pairing, not from the notebook</div>'+(n.mir.role==='problem'?'Its answer above: ':'It answers, below: ')+'<b>'+esc(n.mir.o.text)+'</b><div class="nt">Turn on Mirrors to see the line across the void.</div></div>';
+      h+='<div class="lnk"><div class="lbl">Mirror · interpretive pairing, not from the notebook</div>'+(n.mir.role==='problem'?'Its answer above: ':'It answers, below: ')+'<b>'+esc(n.mir.o.text)+'</b><div class="nt">Turn on Mirrors to see the line across the void.</div></div>';
     }
     if(n.note) h+='<div class="nt">'+esc(n.note)+'</div>';
     if(n.why) h+='<div class="why"><b>◯ Placement call.</b> '+esc(n.why)+'</div>';
