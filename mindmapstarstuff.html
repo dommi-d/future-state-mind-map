@@ -92,7 +92,7 @@ body.walking #hint,body.walking #mode,body.walking #menuTab,body.walking #panel{
 <div id="tip"></div>
 <div id="mode"></div>
 <button id="menuTab" title="Hide / show menu (M)">‹</button>
-<div id="hint">Hollow ring = my placement call. Click anything to center the camera on it; the journey only stops with the Pause button. With nothing selected: W A S D move, Q / E down / up, Shift faster. Esc or click empty space to deselect. M hides or shows the menu. "Walk me through" starts the guided story. Drag to rotate · wheel or pinch to zoom.</div>
+<div id="hint">Hollow ring = my placement call. Click anything to center the camera on it; the journey only stops with the Pause button. With nothing selected: W A S D move, Q / E down / up, Shift faster. Esc or click empty space to deselect. M hides or shows the menu. "Walk me through" starts the guided story (the wheel still zooms during it). Drag to rotate · wheel or pinch to zoom.</div>
 <div id="panel" class="glass"></div>
 <div id="walk" class="glass">
   <div id="wChap"></div>
@@ -101,6 +101,8 @@ body.walking #hint,body.walking #mode,body.walking #menuTab,body.walking #panel{
     <button id="wBack">‹ Back</button>
     <button id="wPlay">Pause</button>
     <button id="wNext">Next ›</button>
+    <button id="wOut">−</button>
+    <button id="wIn">+</button>
     <button id="wExit">Exit</button>
     <span id="wCount"></span>
   </div>
@@ -196,7 +198,7 @@ const GR={
  csroot:{n:'The Current State',c:'#ff6a5c'},
  cur:{n:'Current State · Catestrophic Condition (spread across the plane)',c:'#ff6a5c'},
  cargo:{n:'The Vessel · Burden & Purpose (carried inside)',c:'#ffb347'},
- aff:{n:'The Vessel · Affirmations (the shell)',c:'#bfe9ff'},
+ aff:{n:'The Vessel · Affirmations (the shell, the ark)',c:'#bfe9ff'},
  voice:{n:"The Vessel · its own voice (inside)",c:'#e0b0ff'},
  sac:{n:'The Vessel · Sacrifice (inside)',c:'#ff7aa8'},
  fourd:{n:'The 4th dimension',c:'#8f9bff'},
@@ -223,7 +225,7 @@ const ABOUT={
  beam:"The ultra light beam is what the vessel rides: the glowing path from the human in the current state, up through the void, to the future state. Its notes are pinned along the first vessel's beam, from the call to escape the current plane at the bottom to the anchor in the future state at the top, and they brighten as the vessel passes. Every other vessel has a beam of the same kind, so they carry no duplicate notes. The fainter beams that curl and dissolve in the void are attempts that did not make it through.",
  void:"The void sits between both planes, in the 4th dimension, and spans the full width of the planes out to all four corners. It has no outline; the clouds alone mark it. Its hub and notes sit inside it, low down and nearer the current state than the future state, because the out they speak of leads back to the current state. The hub is also out toward the edge: farther from the center of the void than it is from the edge of the current state. Soft clouds fill the whole void and show what pulls at the vessel; they never pass through the shell of affirmations. The clouds can be toggled off.",
  star:"Humans are star stuff, and so is the vessel. It is inside every human (the glowing core in each figure). In the current state it is untapped, undirected, pent up in every human (a dim, confined ember), with those notes spread across the plane and each sitting over a human. In the future state it is utilized and energized in every citizen (a bright core and halo). Infinite energy is all of those cores together. If more humans unlock it, they too can ride an ultra light beam across the void, shining into the future state. Use the Vessels slider.",
- aff:"The shell around the vessel. The affirmations stabilize it, keep it on course, and shield it from the pull of the void.",
+ aff:"The shell around the vessel, the ark. The affirmations stabilize it, keep it on course, and shield it from the pull of the void.",
  vessel:"One of the humans. Physically in the 3rd dimension of the current state, but what it holds, its burden and its purpose, belongs to the future state. Inside it: its own voice, its sacrifice, its burden and purpose. Around it: the affirmations. Its body stays rooted at its home in the current plane while its light rides the ultra light beam through the void to its counterpart in the future state."
 };
 const SUBLBL={dest:'DESTINATION',look:'WHAT IT LOOKS LIKE',feel:'HOW IT FEELS',cit:'ITS CITIZENS',act:'ACTIVITIES',life:'LIFESTYLE'};
@@ -335,6 +337,7 @@ const byText=t=>nodes.find(n=>n.text===t);
 const rr=n=>36+12*Math.sqrt(n);
 const WHY_P1="Page 1 has no section heading above this line, so placing it with the vessel's own voice is my call.";
 const WAR="There's a war going on outside we ain't safe from";
+const NOBELL="DO NOT ring that bell.";
 
 /* --- Future State --- */
 const FSR=hub('fsroot','fsroot','root','THE FUTURE STATE',0,FY+140,0,ABOUT.fsroot,null,['hf1','hf2']);
@@ -540,7 +543,7 @@ ring('aff',[
  ["I deserve it all.","s3","Page 1 has no heading above it. I treated it as an affirmation that steadies the vessel.","Written twice in the same bullet."],
  ["Confrontation ain't nothing new to me.","s4"],
  ["Ain't nobody bigger than the program, 'til you're bigger than the program.","s8","Page 1 has no heading above it. I treated it as an affirmation that keeps the vessel on course."],
- ["You MUST NOT ring that bell.","s20","","Your edit: the notebook transcription reads \"You CANNOT ring that bell.\" The line that holds against the pull to quit, so it sits in the shell."],
+ [NOBELL,"s20","","Your edit: the notebook transcription reads \"You CANNOT ring that bell.\" The line that holds against the pull to quit, so it sits in the shell."],
  ["Creed.","s22","Unclear whether this answers \"What's your name?\" or starts the run of affirmations. I kept it with the shell.","A first attempt at the name is crossed out in the notebook."],
  ["Urgency.","s22","Part of the same run as \"Creed.\""],
  ["We are so close","s22"],["Tho our enemies have ammo, we will be protected.","s22"],["We will Carry and do battle.","s22"]
@@ -555,8 +558,8 @@ const LINKS={
  },
  bell:{
   label:'Your explanation, not from the notebook',
-  body:"The bell is from SEAL training. Ringing the bell ends the training and you can go home. In the void you will have the opportunity to give it all up: to let go and fall away. You will have an out, a way to leave the void, return to the current state and feel the comfort. You MUST NOT take the out. You MUST NOT ring the bell.",
-  members:["You will get an out.","You can ring the bell.","You MUST NOT ring that bell."].map(byText)
+  body:"The bell is from SEAL training. Ringing the bell ends the training and you can go home. In the void you will have the opportunity to give it all up: to let go and fall away. You will have an out, a way to leave the void, return to the current state and feel the comfort. DO NOT take the out. DO NOT ring the bell.",
+  members:["You will get an out.","You can ring the bell.",NOBELL].map(byText)
  },
  energy:{
   label:'Read together',
@@ -693,7 +696,7 @@ const planeQuad=[{ok:false,p:[]},{ok:false,p:[]}];
 const Q=[]; let LB=[];
 const tmp=[0,0,0], hd2={x:0,y:0,z:0};
 const keys=new Set();
-const walk={on:false,i:0,auto:true,t:0,u:0,va:0,arr:0,nvAcc:0,saved:null};
+const walk={on:false,i:0,auto:true,t:0,u:0,va:0,arr:0,nvAcc:0,saved:null,zoom:1};
 let STOPS=[];
 
 /* ================= update ================= */
@@ -1229,7 +1232,8 @@ cv.addEventListener('pointermove',e=>{
   if(p){
     const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY; moved+=Math.abs(dx)+Math.abs(dy);
     if(ptrs.size===1){ cam.theta-=dx*.0065; cam.phi=clamp(cam.phi-dy*.0065,.12,Math.PI-.12); }
-    else if(ptrs.size===2){ const q=[...ptrs.values()], d=Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y); if(pinch>0&&d>0){ const f=pinch/d; cam.distGoal=clamp(cam.distGoal*f,7,3400); cam.dist=clamp(cam.dist*f,7,3400); } pinch=d; }
+    else if(ptrs.size===2){ const q=[...ptrs.values()], d=Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y); if(pinch>0&&d>0){ const f=pinch/d;
+      if(walk.on) walk.zoom=clamp(walk.zoom*f,.15,6); else { cam.distGoal=clamp(cam.distGoal*f,7,3400); cam.dist=clamp(cam.dist*f,7,3400); } } pinch=d; }
     tip.style.display='none';
   } else if(e.pointerType==='mouse'){
     hover=pickAt(e.clientX,e.clientY);
@@ -1257,7 +1261,7 @@ function endPtr(e){
 }
 cv.addEventListener('pointerup',endPtr); cv.addEventListener('pointercancel',endPtr);
 cv.addEventListener('pointerleave',()=>{ hover=null; tip.style.display='none'; });
-cv.addEventListener('wheel',e=>{ e.preventDefault(); cam.distGoal=clamp(cam.distGoal*Math.exp(e.deltaY*.0012),7,3400); },{passive:false});
+cv.addEventListener('wheel',e=>{ e.preventDefault(); const f=Math.exp(e.deltaY*.0012); if(walk.on) walk.zoom=clamp(walk.zoom*f,.15,6); else cam.distGoal=clamp(cam.distGoal*f,7,3400); },{passive:false});
 
 /* keyboard: free camera (only when nothing is selected) */
 const MOVEKEYS='wasdqe';
@@ -1356,13 +1360,13 @@ STOPS=[
  {tgt:ON(TRO),dist:160,th:.8,ph:1.15,iso:['cur'],caps:[["live moment-to-moment and day-to-day in relation to contingency and consumption.","add"]]},
  /* II · The vessel */
  {u:0,va:1,tgt:FIX(HOME.x,CTOP+14,HOME.z),dist:80,th:.7,ph:1.25,iso:['cargo','aff','voice','sac','humans'],caps:[["Burdened with glorious purpose."]]},
- {u:0,va:1,tgt:VES,dist:14,th:.4,ph:1.3,iso:['voice','sac'],caps:[["This is my Sacrifice."]]},
- {u:0,va:1,tgt:VES,dist:24,th:1.1,ph:1.3,iso:['cargo'],caps:[["The Future State is stored within me."]]},
- {u:0,va:1,tgt:VES,dist:40,th:1.8,ph:1.25,iso:['aff'],caps:[["God does not call the qualified. He qualifies the called."]]},
+ {u:0,va:1,tgt:VES,dist:14,th:.4,ph:1.3,iso:['voice','sac'],caps:[["The vessel's own voice. Be not conformed to this world.","edit"]]},
+ {u:0,va:1,tgt:VES,dist:24,th:1.1,ph:1.3,iso:['cargo'],caps:[["Filled with a higher calling. A renewing of your mind","edit"]]},
+ {u:0,va:1,tgt:VES,dist:40,th:1.8,ph:1.25,iso:['aff'],caps:[["Ark. Protect the vessel.","edit"]]},
  /* III · The crossing */
  {u:.2,va:1,tgt:VES,dist:150,th:.9,ph:1.3,iso:ALLV,caps:[["Take my mind to a higher place."]]},
- {u:.4,va:1,tgt:VES,dist:170,th:1.4,ph:1.4,iso:ALLV.concat(['void']),caps:[["Voided. Void all around."]]},
- {u:.4,va:1,tgt:VHV,dist:460,th:.9,ph:1.2,iso:['void','aff','beam'],link:'bell',caps:[["You will get an out. You can ring the bell. You MUST NOT ring that bell.","edit"]]},
+ {u:.4,va:1,tgt:VES,dist:170,th:1.4,ph:1.4,iso:ALLV.concat(['void']),caps:[["It is not safe out here in the void.","edit"]]},
+ {u:.4,va:1,tgt:VHV,dist:460,th:.9,ph:1.2,iso:['void','aff','beam'],link:'bell',caps:[["You will get an out. You can ring the bell. DO NOT ring that bell.","edit"]]},
  {u:.62,va:1,tgt:VES,dist:120,th:.5,ph:1.3,iso:['path','voice','aff','beam','void'],caps:[["Dear God make it all right. Save me. Hold me."],["There is a way. There is a narrow path through.","edit"]]},
  {u:1,va:1,arr:1,arrv:1,tgt:VES,dist:110,th:.7,ph:1.35,iso:['beam','path','humans','aff','cargo','voice','sac'],caps:[["Anchor that golden beam of light","edit"]]},
  /* IV · The destination */
@@ -1375,7 +1379,7 @@ STOPS=[
  {u:1,va:0,arrv:1,pulse:1,tgt:FIX(0,0,0),dist:1700,th:.55,ph:1.12,iso:['humans','star','starC'],caps:[["Infinite energy."]]},
  /* Closing */
  {u:1,va:0,arrv:1,nv:14,mir:1,det:1,tgt:FIX(0,0,0),dist:1750,th:.55,ph:1.22,iso:null,caps:[["No child left behind."]]},
- {free:1,det:1,dur:6,tgt:FIX(0,0,0),dist:1750,th:.55,ph:1.22,iso:null,caps:[["Caught between space and time.","you"]]}
+ {free:1,det:1,dur:6,tgt:FIX(0,0,0),dist:1750,th:.55,ph:1.22,iso:null,caps:[]}   /* ends silent */
 ];
 const CHAP=[['Opening',0],['I · The ground',1],['II · The vessel',6],['III · The crossing',10],['IV · The destination',15],['Closing',22]];
 
@@ -1391,7 +1395,7 @@ function walkCaption(){
   wCount.textContent=(walk.i+1)+' / '+STOPS.length;
 }
 function goStop(i){
-  walk.i=clamp(i,0,STOPS.length-1); walk.t=0;
+  walk.i=clamp(i,0,STOPS.length-1); walk.t=0; walk.zoom=1;
   const st=STOPS[walk.i];
   iso=st.iso?new Set(st.iso):null; chipOn=-1; syncChips();
   setDet(!!st.det); setMir(!!st.mir);
@@ -1422,6 +1426,8 @@ $('wNext').onclick=function(){ goStop(walk.i+1); this.blur(); };
 $('wBack').onclick=function(){ goStop(walk.i-1); this.blur(); };
 $('wPlay').onclick=function(){ walk.auto=!walk.auto; walkPlayUI(); this.blur(); };
 $('wExit').onclick=function(){ exitWalk(); this.blur(); };
+$('wIn').onclick=function(){ walk.zoom=clamp(walk.zoom*.7,.15,6); this.blur(); };
+$('wOut').onclick=function(){ walk.zoom=clamp(walk.zoom/.7,.15,6); this.blur(); };
 
 // the walkthrough drives vessel 0, the clock for each stop, and the vessel count
 function walkTick(dt){
@@ -1447,7 +1453,7 @@ function walkCam(dt){
   const st=STOPS[walk.i], t=st.tgt(), kr=1-Math.exp(-dt*2.6);
   tgoal[0]=t[0]; tgoal[1]=t[1]; tgoal[2]=t[2];
   cam.tx+=(t[0]-cam.tx)*kr; cam.ty+=(t[1]-cam.ty)*kr; cam.tz+=(t[2]-cam.tz)*kr;
-  cam.distGoal=st.dist;
+  cam.distGoal=clamp(st.dist*walk.zoom,7,3400);
   if(!dragging){
     let d=st.th+walk.t*.025-cam.theta; d-=TAU*Math.round(d/TAU); cam.theta+=d*kr;
     cam.phi=clamp(cam.phi+(st.ph-cam.phi)*kr,.12,Math.PI-.12);
