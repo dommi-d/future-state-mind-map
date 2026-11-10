@@ -12,11 +12,11 @@ canvas{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
 #top{position:fixed;left:12px;right:12px;top:10px;pointer-events:none;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 #top h1{font-size:14px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;text-shadow:0 0 12px #000}
 #top p{font-size:12px;opacity:.72;max-width:760px;line-height:1.35;margin-top:2px;text-shadow:0 0 8px #000}
-#bar{pointer-events:auto;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:7px 9px}
+#bar{pointer-events:auto;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:7px 9px}
+.brow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 #bar button,.chip,#walk button{font:inherit;font-size:11.5px;color:#e8ecff;background:rgba(120,130,255,.14);border:1px solid rgba(160,170,255,.28);border-radius:999px;padding:5px 10px;cursor:pointer}
 #bar button:hover,.chip:hover,#walk button:hover{background:rgba(150,160,255,.3)}
 #bar button.on{background:rgba(255,210,120,.3);border-color:rgba(255,210,120,.7)}
-#bar button#bWalk{background:rgba(255,210,120,.2);border-color:rgba(255,210,120,.6)}
 .sl{display:flex;align-items:center;gap:7px;font-size:12px;padding-right:6px}
 .sl b{min-width:20px;text-align:right;color:#ffd27a}
 .sl input{width:150px;accent-color:#ffd27a}
@@ -75,24 +75,28 @@ body.walking #hint,body.walking #mode,body.walking #menuTab,body.walking #panel{
   <h1>The Future State</h1>
   <p>Future State above, Current State below, the void between them in the 4th dimension. Humans are scattered through both planes, star stuff inside every one. The vessel rides an ultra light beam across, carrying its voice, burden and purpose inside its affirmations.</p>
   <div id="bar" class="glass">
-    <label class="sl">Vessels <b id="vn">1</b><input id="vs" type="range" min="1" max="48" value="1"><span id="vr"></span></label>
-    <button id="bWalk">Walk me through</button>
-    <button id="bPause">Pause journey</button>
-    <button id="bSpin">Pause spin</button>
-    <button id="bCloud">Hide void clouds</button>
-    <button id="bMir">Mirrors: off</button>
-    <button id="bDet">Detail by distance: off</button>
-    <button id="bLab">Hide element labels</button>
-    <button id="bIn">Zoom in</button>
-    <button id="bOut">Zoom out</button>
-    <button id="bReset">Reset view</button>
+    <div class="brow">
+      <label class="sl">Vessels <b id="vn">1</b><input id="vs" type="range" min="1" max="48" value="1"><span id="vr"></span></label>
+      <button id="bPause">Pause journey</button>
+      <button id="bSpin">Pause spin</button>
+      <button id="bCloud">Hide void clouds</button>
+      <button id="bMir">Mirrors: off</button>
+      <button id="bDet">Detail by distance: off</button>
+    </div>
+    <div class="brow">
+      <button id="bLab">Hide element labels</button>
+      <button id="bIn">Zoom in</button>
+      <button id="bOut">Zoom out</button>
+      <button id="bReset">Reset view</button>
+      <button id="bWalk">Experimental Tour</button>
+    </div>
   </div>
   <div id="leg"></div>
 </div>
 <div id="tip"></div>
 <div id="mode"></div>
 <button id="menuTab" title="Hide / show menu (M)">‹</button>
-<div id="hint">Hollow ring = my placement call. Click anything to center the camera on it; the journey only stops with the Pause button. With nothing selected: W A S D move, Q / E down / up, Shift faster. Esc or click empty space to deselect. M hides or shows the menu. "Walk me through" starts the guided story (the wheel still zooms during it). Drag to rotate · wheel or pinch to zoom.</div>
+<div id="hint">Hollow ring = my placement call. Click anything to center the camera on it; the journey only stops with the Pause button. With nothing selected: W A S D move, Q / E down / up, Shift faster. Esc or click empty space to deselect. M hides or shows the menu. "Experimental Tour" starts the guided story (the wheel still zooms during it). Drag to rotate · wheel or pinch to zoom.</div>
 <div id="panel" class="glass"></div>
 <div id="walk" class="glass">
   <div id="wChap"></div>
